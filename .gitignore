@@ -1,0 +1,8 @@
+/bin
+/gen
+/res/values/keys.xml
+/proguard
+/local.properties
+/ant.properties
+/lint.xml
+.settings

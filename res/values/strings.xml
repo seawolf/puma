@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Puma</string>
+    <string name="action_settings">Settings</string>
+    <string name="welcome">Welcome!</string>
+    <string name="insert_webfinger_id">Webfinger ID</string>
+	<string name="insert_webfinger_id_desc">Enter your ID on your pump.io site.\nIt looks like an email address,\nwith your nickname then "@"\nthen your server</string>
+	<string name="webfinger_sample">username@example.com</string>
+	<string name="webfinger_not_valid">Not valid</string>
+	<string name="btn_next">Next</string>
+	
+</resources>
