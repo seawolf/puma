@@ -9,5 +9,13 @@
 	<string name="webfinger_sample">username@example.com</string>
 	<string name="webfinger_not_valid">Not valid</string>
 	<string name="btn_next">Next</string>
+	<string name="auth_progress_msg">Please wait, authentication in progress</string>
+	
+	<string name="warning">Warning</string>
+    <string name="error">Error</string>
+	<string name="error_generic">Sorry, something went wrong..</string>
+	<string name="error_generic_detail">Sorry, something went wrong..\n%s</string>
+	
+	<string name="oauth_error_user_refused">You did not authorized the connection.\nCan\'t proceed</string>
 	
 </resources>

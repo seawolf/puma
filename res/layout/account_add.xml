@@ -10,6 +10,34 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
+    <!-- progress -->
+    <LinearLayout
+        android:id="@+id/rl_auth_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/auth_progress_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textColor="#fdb513"
+            android:text="@string/auth_progress_msg"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+    </LinearLayout>
+    
+    <!-- webfinger -->
     <RelativeLayout android:id="@+id/rl_webfinger"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
