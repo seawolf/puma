@@ -30,12 +30,14 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.ProtocolException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.RedirectHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -330,6 +332,21 @@ public class HttpUtil {
 		if (consumer != null) {
 			try {
 				consumer.sign(method);
+				mClient.setRedirectHandler(new RedirectHandler() {
+					
+					// Ignore
+					@Override
+					public boolean isRedirectRequested(HttpResponse response,
+							HttpContext context) {
+						return false;
+					}
+					
+					@Override
+					public URI getLocationURI(HttpResponse response, HttpContext context)
+							throws ProtocolException {
+						return null;
+					}
+				});
 			} catch (OAuthMessageSignerException e) {
 				 e.printStackTrace();
 			}catch (OAuthExpectationFailedException e) {
@@ -345,6 +362,7 @@ public class HttpUtil {
 		} catch (ClientProtocolException e) {
 			throw new HttpUtilException(800,"HTTP protocol error.");
 		} catch(IOException e) {
+			e.printStackTrace();
 			throw new HttpUtilException(800,"HTTP protocol error.");
 		}
 
@@ -379,14 +397,19 @@ public class HttpUtil {
 				throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 			}
 			
-		} else if ( (statusCode == 301 || statusCode == 302 || statusCode == 303) && GET.equals(httpMethod) && loop < 3) {
+		} else if ( (statusCode == 301 || statusCode == 302 || statusCode == 303) && GET.equals(httpMethod)) {
 //			Log.v("HttpManager", "Got : " + statusCode);
+			if(loop > 3) {
+				 throw new HttpUtilException(statusCode,"Too many redirect: " + url);
+			}
 			Header hLocation = response.getLastHeader("Location");
 			if (hLocation != null) {
 				Log.v("HttpManager", "Got : " + hLocation.getValue());
 				return requestData(hLocation.getValue(), httpMethod,params, loop+1);
+			} else {
+				 throw new HttpUtilException(statusCode,"redirect without location header: ");
 			}
-			else throw new HttpUtilException(statusCode,"Too many redirect: " + url);
+			
 		} else if (statusCode != 200) {
 			throw new HttpUtilException(999,"Unmanaged response code: " + statusCode);
 		}
@@ -446,6 +469,21 @@ public class HttpUtil {
 		if (consumer != null) {
 			try {
 				consumer.sign(post);
+				mClient.setRedirectHandler(new RedirectHandler() {
+					
+					// Ignore
+					@Override
+					public boolean isRedirectRequested(HttpResponse response,
+							HttpContext context) {
+						return false;
+					}
+					
+					@Override
+					public URI getLocationURI(HttpResponse response, HttpContext context)
+							throws ProtocolException {
+						return null;
+					}
+				});
 			} catch (OAuthMessageSignerException e) {
 				e.printStackTrace();
 			}catch (OAuthExpectationFailedException e) {

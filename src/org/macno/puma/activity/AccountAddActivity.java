@@ -6,18 +6,19 @@ import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 import oauth.signpost.exception.OAuthException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.macno.puma.R;
+import org.macno.puma.core.Account;
+import org.macno.puma.manager.AccountManager;
 import org.macno.puma.manager.OAuthManager;
-import org.macno.puma.util.HttpUtil;
-import org.macno.puma.util.HttpUtilException;
+import org.macno.puma.provider.Pumpio;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,12 +37,6 @@ import android.widget.Toast;
 
 public class AccountAddActivity extends Activity {
 	
-	private static final String REQUEST_TOKEN_URL = "https://%s/oauth/request_token";
-	private static final String AUTHORIZE_URL     = "https://%s/oauth/authorize";
-	private static final String ACCESS_TOKEN_URL = "https://%s/oauth/access_token";
-	
-	private static final String WHOAMI_URL = "%s/api/whoami";
-	
 	private static final String EMAIL_PATTERN = 
 			"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
@@ -55,15 +50,18 @@ public class AccountAddActivity extends Activity {
 	private String mUsername;
 	private String mHost;
 	
-	private CommonsHttpOAuthConsumer	mConsumer;
-	private CommonsHttpOAuthProvider 	mProvider;
+	private OAuthManager mOauthManager;
 	
-	private HttpUtil mHttpUtil;
 	private LoginHandler mHandler = new LoginHandler(this);
+	
+	private Context mContext;
+	
+	private Account mAccount;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
         setContentView(R.layout.account_add);
         
         mNext = (Button)findViewById(R.id.btn_next);
@@ -84,6 +82,7 @@ public class AccountAddActivity extends Activity {
 		mWebfingerView = (ViewGroup)findViewById(R.id.rl_webfinger);
 		mProgressView = (ViewGroup)findViewById(R.id.rl_auth_progress);
 		
+		mOauthManager = new OAuthManager(this);
 	}
 
 	private void switchView(View view) {
@@ -106,8 +105,6 @@ public class AccountAddActivity extends Activity {
 		}
 		mUsername = webfinger.substring(0,atpos);
 		mHost = webfinger.substring(atpos+1);
-		
-		mHttpUtil = new HttpUtil(mHost);
 		
 		getRequestTokenURL();
 		
@@ -155,38 +152,24 @@ public class AccountAddActivity extends Activity {
 			public void run() {
 				
 				try {
-					OAuthManager oauthManager = new OAuthManager(AccountAddActivity.this);
 					
 //					// ONLY FOR TESTING PURPOSE!!!! 
 //					// REMOVE BEFORE PRODUCTION!!
 //					oauthManager.removeConsumerForHost(mHost);
 					
-					mConsumer = oauthManager.getConsumerForHost(mHost);
-					
-					Log.d(APP_NAME,""+mConsumer.getConsumerKey());
-					Log.d(APP_NAME,""+mConsumer.getConsumerSecret());
-					Log.d(APP_NAME,""+mConsumer.getToken());
-					Log.d(APP_NAME,""+mConsumer.getTokenSecret());
+					mOauthManager.prepareConsumerForHost(mHost);
 					
 				} catch(Exception e) {
 					Log.e(APP_NAME, "Error getting consumer", e);
 					mHandler.errorOAuthURL(e.getMessage());
 					return;
 				}
-
-				mProvider = new CommonsHttpOAuthProvider(
-						String.format(REQUEST_TOKEN_URL, mHost), 
-						String.format(ACCESS_TOKEN_URL, mHost),
-						String.format(AUTHORIZE_URL, mHost),mHttpUtil.getHttpClient());
+				
+				mOauthManager.prepareProviderForHost(mHost);
 
 				try {
-					String url = mProvider.retrieveRequestToken(mConsumer, "https://puma.macno.org/fake/oauth_callback");
-					
-					Log.d(APP_NAME,""+mConsumer.getConsumerKey());
-					Log.d(APP_NAME,""+mConsumer.getConsumerSecret());
-					Log.d(APP_NAME,""+mConsumer.getToken());
-					Log.d(APP_NAME,""+mConsumer.getTokenSecret());
-					
+					String url = mOauthManager.retrieveRequestToken("https://puma.macno.org/fake/oauth_callback");
+										
 					mHandler.openOAuthWebPage(url);
 				} catch(OAuthException e) {
 					Log.e(APP_NAME, "Erorr getting request token", e);
@@ -208,6 +191,86 @@ public class AccountAddActivity extends Activity {
 	private void openOAuthWebPage(String url) {
 		mOAuthView.loadUrl(url);
 		switchView(mOAuthView);
+	}
+	
+	private void loginComplete() {
+		//C'mon, let's go!
+		HomeActivity.startActivity(this, mAccount);
+		finish();
+	}
+	
+	private static class LoginHandler extends Handler {
+
+		private static final String K_TOKEN_URL = "tokenURL";
+		private static final String K_ERROR_MESSAGE = "errorMessage";
+		
+		private final WeakReference<AccountAddActivity> mTarget; 
+
+		static final int MSG_OPEN_OAUTH_PAGE = 0;
+		static final int MSG_ERROR_OAUTH = 1;
+		static final int MSG_LOGGED_IN = 2;
+
+		LoginHandler(AccountAddActivity target) {
+			mTarget = new WeakReference<AccountAddActivity>(target);
+		}
+
+		public void handleMessage(Message msg) {
+			AccountAddActivity target = mTarget.get();
+			Bundle data = msg.getData();
+			
+			switch (msg.what) {
+			case MSG_OPEN_OAUTH_PAGE:
+				target.openOAuthWebPage(data.getString(K_TOKEN_URL));
+				break;
+				
+			case MSG_ERROR_OAUTH:
+				target.notifyOAuthError(data.getString(K_ERROR_MESSAGE));
+				break;
+				
+			case MSG_LOGGED_IN:
+				target.loginComplete();
+				break;
+			}
+		}
+		
+		void openOAuthWebPage(String url) {
+			Message msg = new Message();
+			msg.what=MSG_OPEN_OAUTH_PAGE;
+			Bundle data = new Bundle();
+			data.putString(K_TOKEN_URL, url);
+			msg.setData(data);
+			sendMessage(msg);
+		}
+		
+		void errorOAuthURL(String error) {
+			Message msg = new Message();
+			msg.what=MSG_ERROR_OAUTH;
+			Bundle data = new Bundle();
+			data.putString(K_ERROR_MESSAGE, error);
+			msg.setData(data);
+			sendMessage(msg);
+		}
+		
+		void loginComplete() {
+			sendEmptyMessage(MSG_LOGGED_IN);
+		}
+	}
+	
+	private class OAuthWebListener extends WebViewClient {
+		
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			
+			Uri uri = Uri.parse(url);
+			
+			if(uri.getHost().equals("puma.macno.org")) {
+				// Close OAUTH WebView
+				Log.d(APP_NAME,"Intercepted puma.macno.org URL loading");
+				parseOAuthCallback(uri);
+				return true;
+			} else return false;
+		
+		 }	
 	}
 	
 	private void parseOAuthCallback(final Uri uri) {
@@ -235,45 +298,51 @@ public class AccountAddActivity extends Activity {
 			public void run() {
 				
 				try {
+					
 					String oauthVerifier = uri.getQueryParameter("oauth_verifier");
 					
-					mProvider.retrieveAccessToken(mConsumer,oauthVerifier);
-					
-					Log.d(APP_NAME,""+mConsumer.getConsumerKey());
-					Log.d(APP_NAME,""+mConsumer.getConsumerSecret());
-					Log.d(APP_NAME,""+mConsumer.getToken());
-					Log.d(APP_NAME,""+mConsumer.getTokenSecret());
-					
+					mOauthManager.retrieveAccessToken(oauthVerifier);
+										
 				} catch(OAuthException e) {
 					Log.e(APP_NAME, "Error getting access token", e);
+					mHandler.errorOAuthURL("Unable to load user");
 					return;
 				}
 
-				
-				
-				String baseURL = String.format(WHOAMI_URL, mHost);
-				JSONObject juser = null;
-				try {
-					juser = mHttpUtil.getJsonObject("https://"+baseURL);
-				} catch(HttpUtilException e) {
-					e.printStackTrace();
-					//non https
-					try {
-						juser = mHttpUtil.getJsonObject("http://"+baseURL);
-					} catch (HttpUtilException e2) {
-						e2.printStackTrace();
-						mHandler.errorOAuthURL(e2.getMessage());
-						return;
-					}
+				CommonsHttpOAuthConsumer consumer = mOauthManager.getConsumer();
+
+				AccountManager am = new AccountManager(mContext);
+				Account tmp = am.create(mUsername, mHost);
+				tmp.setOauthClientId(consumer.getConsumerKey());
+				tmp.setOauthClientSecret(consumer.getConsumerSecret());
+				tmp.setOauthToken(consumer.getToken());
+				tmp.setOauthTokenSecret(consumer.getTokenSecret());
+
+				Pumpio pumpio = new Pumpio(mContext);
+				pumpio.setAccount(tmp);
+
+				JSONObject juser = pumpio.getWhoami();
+				if(juser == null) {
+					// uops.. fails :(
+					mHandler.errorOAuthURL("Unable to load user");
+					am.delete(tmp);
+					return;
 				}
 				try {
 					Log.d(APP_NAME,juser.toString(3));
 					String preferredUsername = juser.getString("preferredUsername");
-					if(preferredUsername.equals(mUsername)) {
-						// Ok
+					if(!preferredUsername.equals(mUsername)) {
+						tmp.setUsername(preferredUsername);
+						am.save(tmp);
 					}
+					am.setDefault(tmp);
+					mAccount = tmp;
+					mHandler.loginComplete();
 				} catch (JSONException e) {
 					Log.e(APP_NAME,e.getMessage(),e);
+					mHandler.errorOAuthURL("Unable to load user");
+					am.delete(tmp);
+					return;
 				}
 				
 			}
@@ -281,70 +350,5 @@ public class AccountAddActivity extends Activity {
 		new Thread(runnable).start();
 	}
 	
-	private static class LoginHandler extends Handler {
-
-		private static final String K_TOKEN_URL = "tokenURL";
-		private static final String K_ERROR_MESSAGE = "errorMessage";
-		
-		private final WeakReference<AccountAddActivity> mTarget; 
-
-		static final int MSG_OPEN_OAUTH_PAGE = 0;
-		static final int MSG_ERROR_OAUTH = 1;
-
-		LoginHandler(AccountAddActivity target) {
-			mTarget = new WeakReference<AccountAddActivity>(target);
-		}
-
-		public void handleMessage(Message msg) {
-			AccountAddActivity target = mTarget.get();
-			Bundle data = msg.getData();
-			
-			switch (msg.what) {
-			case MSG_OPEN_OAUTH_PAGE:
-				target.openOAuthWebPage(data.getString(K_TOKEN_URL));
-				break;
-				
-			case MSG_ERROR_OAUTH:
-				target.notifyOAuthError(data.getString(K_ERROR_MESSAGE));
-				break;
-			}
-		}
-		
-		void openOAuthWebPage(String url) {
-			Message msg = new Message();
-			msg.what=MSG_OPEN_OAUTH_PAGE;
-			Bundle data = new Bundle();
-			data.putString(K_TOKEN_URL, url);
-			msg.setData(data);
-			sendMessage(msg);
-		}
-		
-		void errorOAuthURL(String error) {
-			Message msg = new Message();
-			msg.what=MSG_ERROR_OAUTH;
-			Bundle data = new Bundle();
-			data.putString(K_ERROR_MESSAGE, error);
-			msg.setData(data);
-			sendMessage(msg);
-		}
-	}
 	
-	private class OAuthWebListener extends WebViewClient {
-		
-		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			
-			Uri uri = Uri.parse(url);
-			
-			if(uri.getHost().equals("puma.macno.org")) {
-				// Close OAUTH WebView
-				Log.d(APP_NAME,"Intercepted puma.macno.org URL loading");
-				parseOAuthCallback(uri);
-				return true;
-			} else return false;
-		
-		 }	
-	}
-	
-
 }

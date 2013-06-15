@@ -87,9 +87,12 @@ public class AccountManager {
 		account.setUuid(accountUUID.toString());
 		account.setUsername(username);
 		account.setNode(node);
-		JSONObject jaccount = account.toJSON();
-		mSettings.edit().putString(account.getUuid(), jaccount.toString()).commit();
+		mSettings.edit().putString(account.getUuid(), account.toString()).commit();
 		return account;
+	}
+	
+	public boolean save(Account account) {
+		return mSettings.edit().putString(account.getUuid(), account.toString()).commit();
 	}
 	
 	/**

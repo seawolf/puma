@@ -6,6 +6,7 @@ import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -29,6 +30,7 @@ public class MainActivity extends Activity {
 				// Un solo profilo
 				// Avvio activity esercizi
 				account = accounts.get(0);
+				startHomeActivity(account);
 				break;
 			default:
 				// Più di un profilo
@@ -48,12 +50,14 @@ public class MainActivity extends Activity {
 	}
 	
 	private void startHomeActivity(Account account) {
-		Intent homeIntent = new Intent(this,HomeActivity.class);
-		homeIntent.putExtra(HomeActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
-		startActivity(homeIntent);
+		HomeActivity.startActivity(this, account);
 		finish();
 	}
 	
+	public static void startActivity(Context context) {
+		Intent mainIntent = new Intent(context,MainActivity.class);
+		context.startActivity(mainIntent);
+	}
     
 
 }
