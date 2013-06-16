@@ -18,7 +18,7 @@ public class Account {
 	private String uuid;
 	private String username;
 	private String node;
-	private boolean ssl;
+	private boolean ssl = true;
 	private String oauthClientId;
 	private String oauthClientSecret;
 	private String oauthToken;
@@ -94,7 +94,7 @@ public class Account {
 		account.setUsername(o.optString(K_USERNAME));
 		account.setNode(o.optString(K_NODE));
 		account.setUuid(o.optString(K_UUID));
-		account.setSsl(o.optBoolean(K_SSL, true));
+		account.setSsl(o.optBoolean(K_SSL,true));
 		account.setOauthClientId(o.optString(K_OAUTH_CLIENT_ID));
 		account.setOauthClientSecret(o.optString(K_OAUTH_CLIENT_SECRET));
 		account.setOauthToken(o.optString(K_OAUTH_TOKEN, null));

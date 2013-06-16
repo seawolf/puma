@@ -19,6 +19,7 @@ import org.macno.puma.provider.Pumpio;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -77,6 +79,10 @@ public class AccountAddActivity extends Activity {
 		mWebfingerID.addTextChangedListener(mTextWatcher);
 		
 		mOAuthView = (WebView)findViewById(R.id.wv_oauth);
+		WebSettings wSettings = mOAuthView.getSettings();
+		wSettings.setSavePassword(false);
+		wSettings.setSaveFormData(false);
+		wSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 		mOAuthView.setWebViewClient(new OAuthWebListener());
 		
 		mWebfingerView = (ViewGroup)findViewById(R.id.rl_webfinger);
@@ -333,8 +339,9 @@ public class AccountAddActivity extends Activity {
 					String preferredUsername = juser.getString("preferredUsername");
 					if(!preferredUsername.equals(mUsername)) {
 						tmp.setUsername(preferredUsername);
-						am.save(tmp);
+						
 					}
+					am.save(tmp);
 					am.setDefault(tmp);
 					mAccount = tmp;
 					mHandler.loginComplete();
@@ -348,6 +355,12 @@ public class AccountAddActivity extends Activity {
 			}
 		};
 		new Thread(runnable).start();
+	}
+	
+	
+	public static void startActivity(Context context) {
+		Intent accountAddIntent = new Intent(context,AccountAddActivity.class);
+		context.startActivity(accountAddIntent);
 	}
 	
 	

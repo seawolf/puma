@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/ll_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="5dp"  >
+
+            <Spinner
+                android:id="@+id/account_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawSelectorOnTop="true"
+                android:prompt="@string/menu_account"
+                 />
+            
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="5dp" >
+
+            <EditText
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/title_hint_optional"
+                android:singleLine="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                 />
+        </LinearLayout>
+        
+        <EditText
+            android:id="@+id/note"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="left|top"
+            android:imeOptions="actionDone|flagNoEnterAction"
+            android:inputType="textMultiLine|textAutoCorrect|textCapSentences"
+            android:minLines="3"
+            android:hint="@string/compose_note_hint"
+            android:textAppearance="?android:attr/textAppearanceMedium" >
+            <requestFocus />
+        </EditText>
+
+        <LinearLayout
+            android:id="@+id/ll_attachment"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/filename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="14sp" />
+            
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <CheckBox
+                android:id="@+id/public_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/public_post" />
+            <CheckBox
+                android:id="@+id/enable_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/send_location" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

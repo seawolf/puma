@@ -15,8 +15,8 @@ public class PumaApplication extends Application {
 	
 	public static final String K_ACCOUNT_SETTINGS = "AccountsSettings";
 	public static final String K_OAUTH_SETTINGS = "OAuthSettings";
+	public static final String K_PUMA_SETTINGS = "PumaSettings";
 
-	private static final String K_PUMA_SETTINGS = "PumaSettings";
 	private static final String K_VERSION = "pumaVersion";
 	
 	private SharedPreferences mSettings;

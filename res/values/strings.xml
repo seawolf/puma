@@ -2,8 +2,13 @@
 <resources>
 
     <string name="app_name">Puma</string>
+    
     <string name="action_settings">Settings</string>
     <string name="action_logout">Logout</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_compose">Compose</string>
+    <string name="action_add_account">Add account</string>
+    <string name="action_post">Publish</string>
     
     <string name="welcome">Welcome!</string>
     <string name="welcome_user">Welcome %s!</string>
@@ -13,7 +18,17 @@
 	<string name="webfinger_not_valid">Not valid</string>
 	<string name="btn_next">Next</string>
 	<string name="auth_progress_msg">Please wait, authentication in progress</string>
-	
+	<string name="post_complete">Note published</string>
+	<string name="title">Title</string>
+	<string name="title_hint_optional">Title (optional)</string>
+	<string name="compose_note_hint">Compose note</string>
+    <string name="status">What\'s up?</string>
+    <string name="update">Send</string>
+    <string name="upload">Upload</string>
+	<string name="send_from_account">Send from</string>
+	<string name="menu_account">More..</string>
+	<string name="public_post">Public Note</string>
+	<string name="send_location">Attach location</string>
 	<string name="confirm_logout">Are you sure?</string>
 	<string name="warning">Warning</string>
     <string name="error">Error</string>
@@ -21,5 +36,17 @@
 	<string name="error_generic_detail">Sorry, something went wrong..\n%s</string>
 	
 	<string name="oauth_error_user_refused">You did not authorized the connection.\nCan\'t proceed</string>
+	
+	<!-- Dates -->
+	<string name="few_seconds">a few seconds ago</string>
+	<string name="one_minute_ago">"about a minute ago"</string>
+	<string name="minutes_ago">"about %1$s minutes ago"</string>
+	<string name="one_hour_ago">"about an hour ago"</string>
+	<string name="hours_ago">"about %1$s hours ago"</string>
+	<string name="one_day_ago">"about a day ago"</string>
+	<string name="days_ago">"about %1$s days ago"</string>
+	<string name="one_month_ago">"about a month ago"</string>
+	<string name="months_ago">"about %1$s months ago"</string>
+	<string name="one_year_ago">"about a year ago"</string>
 	
 </resources>

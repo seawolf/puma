@@ -102,9 +102,13 @@ public class OAuthManager {
 	public void removeConsumersKey() {
 		mSettings.edit().clear().commit();
 	}
-	public void prepare(String host) throws OAuthException , HttpUtilException {
+	public void prepare(String clientId, String clientSecret,String host) throws OAuthException , HttpUtilException {
 
-		prepareConsumerForHost(host);
+		if(clientId==null && clientSecret == null) {
+			prepareConsumerForHost(host);
+		} else {
+			mConsumer = new CommonsHttpOAuthConsumer(clientId,clientSecret);
+		}
 		prepareProviderForHost(host);
 		
 	}

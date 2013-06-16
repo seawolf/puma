@@ -1,24 +1,30 @@
 package org.macno.puma.activity;
 
 import org.macno.puma.R;
+import org.macno.puma.adapter.StreamPageAdapter;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-public class HomeActivity extends Activity {
+public class HomeActivity extends FragmentActivity implements OnPageChangeListener{
 
 	public static final String EXTRA_ACCOUNT_UUID = "extraAccountUUID";
 	
 	private Account mAccount;
+	
+	private StreamPageAdapter mAdapter;
+	
+	private ViewPager mPager;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,18 +35,24 @@ public class HomeActivity extends Activity {
         String accountUUID = "";
 		if (savedInstanceState != null) {
 			accountUUID = savedInstanceState.getString(EXTRA_ACCOUNT_UUID);
-			
 		} else if (extras != null) {
 			accountUUID = extras.getString(EXTRA_ACCOUNT_UUID);
-			
 		}
 		AccountManager am = new AccountManager(this);
 		mAccount = am.getAccount(accountUUID);
-		TextView welcome = (TextView)findViewById(R.id.tv_welcome);
-		welcome.setText(getString(R.string.welcome_user,mAccount.getUsername()));
+		
+		if(mAccount == null) {
+			AccountAddActivity.startActivity(this);
+			finish();
+		}
+		
+		mPager = (ViewPager)findViewById(R.id.pager);
+		
+		mAdapter = new StreamPageAdapter(this,mAccount);
+		mPager.setAdapter(mAdapter);
+
     }
-
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -54,13 +66,20 @@ public class HomeActivity extends Activity {
 	        case R.id.action_logout:
 	        	onLogoutAction();
 	        	return true;
-	        	
+	        
+	        case R.id.action_add_account:
+	        	onAddAccountAction();
+	        	return true;
 	       
+	        case R.id.action_compose:
+	        	ComposeActivity.startActivity(this, mAccount);
+	        	return true;
+	        	
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
-
+    
     private void onLogoutAction() {
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder
@@ -84,10 +103,30 @@ public class HomeActivity extends Activity {
     	finish();
     }
     
+    private void onAddAccountAction() {
+		AccountAddActivity.startActivity(this);
+		finish();
+    }
+    
     public static void startActivity(Context context,Account account) {
 		Intent homeIntent = new Intent(context,HomeActivity.class);
 		homeIntent.putExtra(HomeActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
 		context.startActivity(homeIntent);
+		
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int arg0) {
+		
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+		
+	}
+
+	@Override
+	public void onPageSelected(int arg0) {
 		
 	}
     

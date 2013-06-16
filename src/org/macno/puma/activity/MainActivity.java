@@ -44,8 +44,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void startAccountAddActivity() {
-		Intent accountAddIntent = new Intent(this,AccountAddActivity.class);
-		startActivity(accountAddIntent);
+		AccountAddActivity.startActivity(this);
 		finish();
 	}
 	

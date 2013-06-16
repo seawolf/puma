@@ -295,7 +295,7 @@ public class HttpUtil {
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
-			throw new HttpUtilException(1000,"Invalid URL.");
+			throw new HttpUtilException(1000,"Invalid URL: " + url);
 		}
 		HttpUriRequest method;
 
@@ -358,6 +358,10 @@ public class HttpUtil {
 		
 		HttpResponse response;
 		try {
+			Header[] headers = method.getAllHeaders();
+			for (int i=0;i<headers.length;i++) {
+				Log.d("HttpUtil", headers[i].getName() + "\n\t" + headers[i].getValue());
+			}
 			response = mClient.execute(method);
 		} catch (ClientProtocolException e) {
 			throw new HttpUtilException(800,"HTTP protocol error.");
@@ -367,7 +371,7 @@ public class HttpUtil {
 		}
 
 		int statusCode = response.getStatusLine().getStatusCode();
-//		Log.d("HttpManager", url + " >> " + statusCode);
+		Log.d("HttpManager", url + " >> " + statusCode);
 		if (statusCode == 401) {
 			throw new HttpUtilException(401,"Unauthorized");
 		} else if (statusCode == 403 || statusCode == 406) {
@@ -397,7 +401,7 @@ public class HttpUtil {
 				throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 			}
 			
-		} else if ( (statusCode == 301 || statusCode == 302 || statusCode == 303) && GET.equals(httpMethod)) {
+		} else if ( (statusCode == 301 || statusCode == 302 || statusCode == 303)) {
 //			Log.v("HttpManager", "Got : " + statusCode);
 			if(loop > 3) {
 				 throw new HttpUtilException(statusCode,"Too many redirect: " + url);
@@ -405,7 +409,7 @@ public class HttpUtil {
 			Header hLocation = response.getLastHeader("Location");
 			if (hLocation != null) {
 				Log.v("HttpManager", "Got : " + hLocation.getValue());
-				return requestData(hLocation.getValue(), httpMethod,params, loop+1);
+				return requestData(hLocation.getValue(), httpMethod, params, body, loop+1);
 			} else {
 				 throw new HttpUtilException(statusCode,"redirect without location header: ");
 			}
