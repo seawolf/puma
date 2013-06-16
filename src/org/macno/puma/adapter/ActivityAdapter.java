@@ -2,16 +2,10 @@ package org.macno.puma.adapter;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,14 +17,9 @@ import org.macno.puma.util.DateUtils;
 import org.macno.puma.view.RemoteImageView;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Html;
-import android.text.Html.ImageGetter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +46,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 	}
 	
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getView(final int position, View convertView, ViewGroup parent) {
 		LinearLayout view;
 		JSONObject act  = getItem(position);
 			
@@ -74,7 +63,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 			
 			note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
 		} else if("image".equals(objectType)) {
-			note.setText(Html.fromHtml(ActivityUtil.getContent(act)));
+			note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
 			RemoteImageView noteImage = (RemoteImageView)view.findViewById(R.id.note_image);
 			noteImage.setVisibility(View.VISIBLE);
 			noteImage.setRemoteURI(ActivityUtil.getObjectImage(obj));
@@ -84,9 +73,12 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		sender.setText(ActivityUtil.getActorBestName(actor));
 		RemoteImageView rim = (RemoteImageView)view.findViewById(R.id.riv_sender);
-		rim.setRemoteURI(ActivityUtil.getImageUrl(actor));
+		String avatar = ActivityUtil.getImageUrl(actor);
+		if(avatar == null) {
+			avatar = "http://macno.org/images/unkown.png";
+		}
+		rim.setRemoteURI(avatar);
 		rim.loadImage();
-		
 		
 		TextView published = (TextView)view.findViewById(R.id.tv_published);
 		String s_published = ActivityUtil.getPublished(act);
@@ -98,6 +90,20 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}
 		published.setText(s_published);
+		
+		view.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				JSONObject act = getItem(position);
+				try {
+					Log.v(APP_NAME,act.optJSONObject("object").toString(3));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
 		return view;
 	}
 	

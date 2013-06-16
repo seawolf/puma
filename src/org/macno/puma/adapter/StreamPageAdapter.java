@@ -38,16 +38,21 @@ public class StreamPageAdapter extends PagerAdapter {
 		inbox.name="Inbox Major";
 		mStreamNames.add(inbox);
 
-//		Stream feed = new Stream();
-//		feed.id="feed/major";
-//		feed.name="Feed";
-//		mStreamNames.add(inbox);
-//		
-//		Stream direct = new Stream();
-//		direct.id="inbox/direct";
-//		direct.name="Inbox Direct";
-//		mStreamNames.add(direct);
+		Stream feed = new Stream();
+		feed.id="feed/major";
+		feed.name="Feed";
+		mStreamNames.add(feed);
 		
+		Stream direct = new Stream();
+		direct.id="inbox/direct";
+		direct.name="Inbox Direct";
+		mStreamNames.add(direct);
+
+		Stream publicFeed = new Stream();
+		publicFeed.id="https://ofirehose.com/feed.json";
+		publicFeed.name="OFirehose.com feed";
+		mStreamNames.add(publicFeed);
+
 	}
 	
 	@Override
@@ -76,8 +81,8 @@ public class StreamPageAdapter extends PagerAdapter {
 	
 		tv.setText(stream.name);
 		
+		final ActivityAdapter activityAdapter = new ActivityAdapter(mContext,mAccount,stream.id);
 		ListView activityList = (ListView)layout.findViewById(R.id.activities_list);
-		ActivityAdapter activityAdapter = new ActivityAdapter(mContext,mAccount,stream.id);
 		
 		activityList.setAdapter(activityAdapter);
 		
@@ -85,6 +90,7 @@ public class StreamPageAdapter extends PagerAdapter {
 		return layout;
 	}
 
+	
 	class Stream {
 		
 		String id;

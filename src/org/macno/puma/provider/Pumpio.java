@@ -73,9 +73,14 @@ public class Pumpio {
 		return null;
 	}
 	
-	public JSONObject fetchStream(String feedType, String since, String before, int count) {
+	public JSONObject fetchStream(String feed, String since, String before, int count) {
 		JSONObject ret = null;
-		String url = prepareUrl(String.format(ACTIVITY_STREAM_URL, mAccount.getUsername(),feedType));
+		String url = null;
+		if(feed.startsWith("http://") || feed.startsWith("https://")) {
+			url = feed;
+		} else {
+			url = prepareUrl(String.format(ACTIVITY_STREAM_URL, mAccount.getUsername(),feed));
+		}
 		try {
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>(); 
 			params.add(new BasicNameValuePair("count", ""+count));
