@@ -81,7 +81,9 @@ public class ActivityUtil {
 			} else if("comment".equals(objectType)) {
 				note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
 			} else if("image".equals(objectType)) {
-				note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
+				String content = ActivityUtil.getContent(obj);
+				if(content != null)
+					note.setText(Html.fromHtml(content));
 				RemoteImageView noteImage = (RemoteImageView)view.findViewById(R.id.note_image);
 				noteImage.setVisibility(View.VISIBLE);
 				noteImage.setRemoteURI(ActivityUtil.getObjectImage(obj));

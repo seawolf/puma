@@ -6,6 +6,8 @@
     <string name="action_settings">Settings</string>
     <string name="action_logout">Logout</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_share">Share</string>
+    <string name="action_reply">Reply</string>
     <string name="action_compose">Compose</string>
     <string name="action_add_account">Add account</string>
     <string name="action_post">Publish</string>
@@ -46,6 +48,7 @@
 	<string name="objecttype_comment">a comment</string>
 	<string name="objecttype_image">an image</string>
 	<string name="objecttype_note">a note</string>
+	<string name="note_shared">Note shared</string>
 	
 	<!-- Dates -->
 	<string name="few_seconds">a few seconds ago</string>

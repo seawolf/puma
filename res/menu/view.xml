@@ -1,16 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-   <item
-		android:id="@+id/action_refresh"
-		android:title="@string/action_refresh"
-		android:showAsAction="always"
-        android:icon="@drawable/navigation_refresh"
-	/>
+   
     <item
 		android:id="@+id/action_reply"
-		android:title="@string/action_compose"
+		android:title="@string/action_reply"
 		android:showAsAction="always"
-        android:icon="@drawable/new_notice"
+        android:icon="@drawable/social_reply"
 	/>
-    
+    <item
+		android:id="@+id/action_share"
+		android:title="@string/action_share"
+		android:showAsAction="always"
+        android:icon="@drawable/social_forward"
+	/>
 </menu>

@@ -31,7 +31,7 @@ public class Pumpio {
 	
 	private static final String ACTIVITY_STREAM_URL = "/api/user/%1$s/%2$s";
 	
-	private boolean mDebug = true;
+	private boolean mDebug = false;
 	
 	private HttpUtil mHttpUtil;
 	private Context mContext;
@@ -103,7 +103,7 @@ public class Pumpio {
 		return ret;
 	}
 	
-	public boolean postNote(JSONObject inReplyTo, String title, String note, String attachment, boolean publicNote, Location location) {
+	public boolean postNote(JSONObject inReplyTo, String note, boolean publicNote, Location location) {
 		
 		JSONObject obj = new JSONObject();
 		JSONObject act = new JSONObject();
@@ -115,9 +115,7 @@ public class Pumpio {
 				obj.put("objectType", "comment");
 				obj.put("inReplyTo", inReplyTo);
 			}
-			if(title!=null && !"".equals(title)) {
-				obj.put("title",title);
-			}
+			
 			obj.put("content", note);
 
 			act.put("generator", getGenerator());
@@ -144,6 +142,37 @@ public class Pumpio {
 				loc.put("position", position);
 				act.put("location", loc);
 			}
+		} catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		String url = prepareUrl(String.format(POST_NOTE_URL, mAccount.getUsername()));
+		mHttpUtil.setContentType("application/json");
+		try {
+			if(mDebug)
+				Log.d(APP_NAME, act.toString(3));
+			JSONObject ret = mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
+			if(mDebug)
+				Log.d(APP_NAME, ret.toString(3));
+			return true;
+		} catch(HttpUtilException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+			return false;
+		}  catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+			return false;
+		}
+	}
+	
+	public boolean shareNote(JSONObject obj) {
+		
+		JSONObject act = new JSONObject();
+		
+		try {
+			
+			act.put("generator", getGenerator());
+			act.put("verb", "share");
+			act.put("object", obj);
+			
 		} catch(JSONException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}

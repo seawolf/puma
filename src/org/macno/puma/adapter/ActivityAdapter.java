@@ -61,7 +61,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 	}
 	
 	private void openViewActivity(JSONObject act) {
-		ViewActivity.startActivity(mContext, act);
+		ViewActivity.startActivity(mContext, mAccount, act);
 	}
 	
 	public void checkNewActivities() {

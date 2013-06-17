@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.macno.puma.R;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
@@ -37,7 +39,11 @@ import android.widget.Toast;
 
 public class ComposeActivity extends Activity {
 
+	public static final int ACTION_REPLY = 1;
+	
 	public static final String EXTRA_ACCOUNT_UUID = "extraAccountUUID";
+	public static final String EXTRA_ACTIVITY = "extraActivity";
+	public static final String EXTRA_ACTION = "extraAction";
 
 	private static final String K_GEO_ENABLED = "geoEnabled";
 	private static final String K_PUBLIC_NOTE = "publicNote";
@@ -52,13 +58,17 @@ public class ComposeActivity extends Activity {
 
 	private Context mContext;
 
-	private EditText mTitle;
+//	private EditText mTitle;
 	private EditText mNote;
 	private CheckBox mCheckBoxLocation;
 	private CheckBox mCheckBoxPublic;
 
 	private PostHandler mHandler = new PostHandler(this);
 
+	private boolean mPreserveAccount=false;
+	private String mActivityId;
+	private int mAction = 0;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -67,10 +77,29 @@ public class ComposeActivity extends Activity {
 		Bundle extras = getIntent().getExtras();
 
 		String accountUUID = "";
+		
+		boolean multiAccount = true;
+		
 		if (savedInstanceState != null) {
-			accountUUID = savedInstanceState.getString(EXTRA_ACCOUNT_UUID);
+			if(savedInstanceState.containsKey(EXTRA_ACCOUNT_UUID)) {
+				accountUUID = savedInstanceState.getString(EXTRA_ACCOUNT_UUID);
+				mPreserveAccount=true;
+			}
+			if(savedInstanceState.containsKey(EXTRA_ACTIVITY)) {
+				mActivityId = savedInstanceState.getString(EXTRA_ACTIVITY);
+				mAction = savedInstanceState.getInt(EXTRA_ACTION);
+				multiAccount = false;
+			}
 		} else if (extras != null) {
-			accountUUID = extras.getString(EXTRA_ACCOUNT_UUID);
+			if(extras.containsKey(EXTRA_ACCOUNT_UUID)) {
+				accountUUID = extras.getString(EXTRA_ACCOUNT_UUID);
+				mPreserveAccount=true;
+			}
+			if(extras.containsKey(EXTRA_ACTIVITY)) {
+				mActivityId = extras.getString(EXTRA_ACTIVITY);
+				mAction = extras.getInt(EXTRA_ACTION);
+				multiAccount = false;
+			}
 		}
 
 		AccountManager am = new AccountManager(this);
@@ -85,13 +114,12 @@ public class ComposeActivity extends Activity {
 			finish();
 		}
 
-		boolean multiAccount = true;
 		
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mSettings = getSharedPreferences(K_PUMA_SETTINGS,Context.MODE_PRIVATE);
 		
 		
-		mTitle = (EditText)findViewById(R.id.title);
+//		mTitle = (EditText)findViewById(R.id.title);
 		mNote = (EditText)findViewById(R.id.note);
 		
 		
@@ -101,9 +129,11 @@ public class ComposeActivity extends Activity {
 		mCheckBoxPublic = (CheckBox)findViewById(R.id.public_post);
 		handlePublicCheckbox();
 		
-		mAccounts = am.getAccounts();
-		if(mAccounts.size() == 1) {
-			multiAccount= false;
+		if(multiAccount) {
+			mAccounts = am.getAccounts();
+			if(mAccounts.size() == 1) {
+				multiAccount= false;
+			}
 		}
 		
 		if(multiAccount) {
@@ -116,6 +146,16 @@ public class ComposeActivity extends Activity {
 		
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putString(EXTRA_ACTIVITY, mActivityId);
+		outState.putInt(EXTRA_ACTION, mAction);
+		if(mPreserveAccount) {
+			outState.putString(EXTRA_ACCOUNT_UUID, mAccount.getUuid());
+		}
+		super.onSaveInstanceState(outState);
+	}
+	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -130,7 +170,6 @@ public class ComposeActivity extends Activity {
 	        	onPostAction();
 	        	return true;
 	        
-	        	
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -155,7 +194,6 @@ public class ComposeActivity extends Activity {
 			
 			switch (msg.what) {
 			
-				
 			case MSG_POST_OK:
 				target.postComplete();
 				break;
@@ -233,11 +271,11 @@ public class ComposeActivity extends Activity {
 		Account current = mAccount;
 		if(spinner.isShown()) {
 			Object o = spinner.getSelectedItem();
-			Log.d(APP_NAME,"Spinner obj: " + o);
+//			Log.d(APP_NAME,"Spinner obj: " + o);
 			current = findAccountByName((String)o);
 		}
 		
-		String title = mTitle.getText().toString();
+//		String title = mTitle.getText().toString();
 		String note = mNote.getText().toString();
 		try {
 			note = new Markdown4jProcessor().process(note);
@@ -249,17 +287,32 @@ public class ComposeActivity extends Activity {
 			LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 			location = LocationUtil.getMostRecentLastKnownLocation(locationManager);
 		}
-		post(current,title,note, mCheckBoxPublic.isChecked(),location);
+		JSONObject inReplyTo = null;
+		switch(mAction) {
+		case ACTION_REPLY:
+			try {
+				inReplyTo = new JSONObject(mActivityId);
+			} catch(JSONException e) {
+				Log.e(APP_NAME,e.getMessage(),e);
+			}
+			break;
+			
+			
+		default:
+			// 
+		}
+		
+		post(current, note, inReplyTo, mCheckBoxPublic.isChecked(), location);
 		
 	}
 	
-	private void post(final Account account, final String title, final String note, final boolean publicNote, final Location location ) {
+	private void post(final Account account, final String note, final JSONObject inReplyTo, final boolean publicNote, final Location location ) {
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				Pumpio pumpio = new Pumpio(mContext);
 				pumpio.setAccount(account);
-				pumpio.postNote(null, title, note, null, publicNote, location);
+				pumpio.postNote(inReplyTo, note, publicNote, location);
 				mHandler.sendPostComplete();
 			}
 		};
@@ -279,6 +332,15 @@ public class ComposeActivity extends Activity {
 	public static void startActivity(Context context,Account account) {
 		Intent homeIntent = new Intent(context,ComposeActivity.class);
 		homeIntent.putExtra(HomeActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
+		context.startActivity(homeIntent);
+	}
+	
+	public static void startActivity(Context context,Account account, String activityId, int action) {
+		Intent homeIntent = new Intent(context,ComposeActivity.class);
+		homeIntent.putExtra(ComposeActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
+		homeIntent.putExtra(ComposeActivity.EXTRA_ACTIVITY, activityId);
+		homeIntent.putExtra(ComposeActivity.EXTRA_ACTION, action);
+		
 		context.startActivity(homeIntent);
 	}
 
