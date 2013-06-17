@@ -37,6 +37,8 @@
             android:name=".activity.HomeActivity" />
         <activity
             android:name=".activity.ComposeActivity" />
+        <activity
+            android:name=".activity.ViewActivity" />
     </application>
 
 </manifest>

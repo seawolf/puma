@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+   <item
+		android:id="@+id/action_refresh"
+		android:title="@string/action_refresh"
+		android:showAsAction="always"
+        android:icon="@drawable/navigation_refresh"
+	/>
+    <item
+		android:id="@+id/action_reply"
+		android:title="@string/action_compose"
+		android:showAsAction="always"
+        android:icon="@drawable/new_notice"
+	/>
+    
+</menu>

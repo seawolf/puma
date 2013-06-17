@@ -50,7 +50,13 @@ public class Pumpio {
 		try {
 			oauthManager.prepare(mAccount.getOauthClientId(),mAccount.getOauthClientSecret(), mAccount.getNode());
 			oauthManager.setConsumerTokenWithSecret(mAccount.getOauthToken(), mAccount.getOauthTokenSecret());
+			
 			CommonsHttpOAuthConsumer consumer = oauthManager.getConsumer();
+			
+//			Log.d(APP_NAME,consumer.getConsumerKey()+"\n"
+//					+consumer.getConsumerSecret()+"\n"
+//					+consumer.getToken()+"\n"
+//					+consumer.getTokenSecret());
 			
 			mHttpUtil.setOAuthConsumer(consumer);
 		} catch (OAuthException e) {

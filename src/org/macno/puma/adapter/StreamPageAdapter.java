@@ -81,7 +81,8 @@ public class StreamPageAdapter extends PagerAdapter {
 	
 		tv.setText(stream.name);
 		
-		final ActivityAdapter activityAdapter = new ActivityAdapter(mContext,mAccount,stream.id);
+		ActivityAdapter activityAdapter = new ActivityAdapter(mContext,mAccount,stream.id);
+		stream.adapter = activityAdapter;
 		ListView activityList = (ListView)layout.findViewById(R.id.activities_list);
 		
 		activityList.setAdapter(activityAdapter);
@@ -90,11 +91,17 @@ public class StreamPageAdapter extends PagerAdapter {
 		return layout;
 	}
 
+	public void refreshAdapter(int viewid) {
+		
+		Stream stream = mStreamNames.get(viewid);
+		stream.adapter.checkNewActivities();
+	}
 	
 	class Stream {
 		
 		String id;
 		String name;
+		ActivityAdapter adapter;
 		
 	}
 }

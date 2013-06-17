@@ -12,11 +12,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class HomeActivity extends FragmentActivity implements OnPageChangeListener{
+public class HomeActivity extends FragmentActivity {
 
 	public static final String EXTRA_ACCOUNT_UUID = "extraAccountUUID";
 	
@@ -75,6 +74,9 @@ public class HomeActivity extends FragmentActivity implements OnPageChangeListen
 	        	ComposeActivity.startActivity(this, mAccount);
 	        	return true;
 	        	
+	        case R.id.action_refresh:
+	        	onRefreshAction();
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -108,25 +110,14 @@ public class HomeActivity extends FragmentActivity implements OnPageChangeListen
 		finish();
     }
     
+    private void onRefreshAction() {
+    	mAdapter.refreshAdapter(mPager.getCurrentItem());
+    }
+    
     public static void startActivity(Context context,Account account) {
 		Intent homeIntent = new Intent(context,HomeActivity.class);
 		homeIntent.putExtra(HomeActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
 		context.startActivity(homeIntent);
-		
-	}
-
-	@Override
-	public void onPageScrollStateChanged(int arg0) {
-		
-	}
-
-	@Override
-	public void onPageScrolled(int arg0, float arg1, int arg2) {
-		
-	}
-
-	@Override
-	public void onPageSelected(int arg0) {
 		
 	}
     
