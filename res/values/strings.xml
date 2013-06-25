@@ -32,8 +32,11 @@
 	<string name="public_post">Public Note</string>
 	<string name="send_location">Attach location</string>
 	<string name="confirm_logout">Are you sure?</string>
+	<string name="trust_and_proceed">Trust anyway and proceed</string>
 	<string name="warning">Warning</string>
     <string name="error">Error</string>
+    <string name="ssl_error">SSL Error</string>
+
 	<string name="error_generic">Sorry, something went wrong..</string>
 	<string name="error_generic_detail">Sorry, something went wrong..\n%s</string>
 	

@@ -4,6 +4,8 @@ import static org.macno.puma.PumaApplication.APP_NAME;
 
 import java.util.ArrayList;
 
+import javax.net.ssl.SSLException;
+
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthException;
 
@@ -14,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.OAuthManager;
+import org.macno.puma.manager.SSLHostTrustManager;
 import org.macno.puma.util.HttpUtil;
 import org.macno.puma.util.HttpUtilException;
 
@@ -29,23 +32,28 @@ public class Pumpio {
 	private static final String WHOAMI_URL = "/api/whoami";
 	private static final String POST_NOTE_URL = "/api/user/%s/feed";
 	
+	private static final String POST_MINOR_ACTIVITY_URL = "/api/user/%s/feed/minor";
+	
 	private static final String ACTIVITY_STREAM_URL = "/api/user/%1$s/%2$s";
 	
-	private boolean mDebug = false;
+	private boolean mDebug = true;
 	
 	private HttpUtil mHttpUtil;
 	private Context mContext;
 	
 	private Account mAccount;
 	
+	private SSLHostTrustManager mSSLHostManager;
+	
 	public Pumpio(Context context) {
 		mContext = context;
 		mHttpUtil = new HttpUtil();
+		mSSLHostManager = new SSLHostTrustManager(mContext);
 	}
 	
 	public void setAccount(Account account) {
 		mAccount = account;
-		mHttpUtil.setHost(mAccount.getNode());
+		mHttpUtil.setHost(mAccount.getNode(),mSSLHostManager.hasHost(mAccount.getNode()));
 		OAuthManager oauthManager = new OAuthManager(mContext);
 		try {
 			oauthManager.prepare(mAccount.getOauthClientId(),mAccount.getOauthClientSecret(), mAccount.getNode());
@@ -59,6 +67,8 @@ public class Pumpio {
 //					+consumer.getTokenSecret());
 			
 			mHttpUtil.setOAuthConsumer(consumer);
+		} catch(SSLException e) {
+			e.printStackTrace();
 		} catch (OAuthException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,8 +105,12 @@ public class Pumpio {
 			} else if(before != null) {
 				params.add(new BasicNameValuePair("before", before));
 			}
+			for (NameValuePair nameValuePair : params) {
+				Log.d(APP_NAME,"["+url+"] " + nameValuePair.getName() + " = " + nameValuePair.getValue());
+			}
 			ret = mHttpUtil.getJsonObject(url, HttpUtil.GET, params);
-			
+		} catch(SSLException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
 		} catch (HttpUtilException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}
@@ -163,6 +177,60 @@ public class Pumpio {
 		}
 	}
 	
+	public boolean postMinorActivity(String verb, JSONObject obj , String content, boolean publicNote, Location location) {
+		
+		
+		JSONObject act = new JSONObject();
+		
+		try {
+			
+			act.put("generator", getGenerator());
+			act.put("verb", verb);
+			act.put("content", content);
+			act.put("object", obj);
+			if(publicNote) {
+				
+				JSONArray tos = new JSONArray();
+				JSONObject to = new JSONObject();
+				to.put("objectType", "collection");
+				to.put("id", "http://activityschema.org/collection/public");
+				tos.put(to);
+				act.put("to", tos);
+			}
+			
+			if(location != null) {
+				
+				JSONObject loc = new JSONObject();
+				
+				JSONObject position = new JSONObject();
+				position.put("altitude", location.getAltitude());
+				position.put("latitude", location.getLatitude());
+				position.put("longitude", location.getLongitude());
+				loc.put("position", position);
+				act.put("location", loc);
+			}
+		} catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		String url = prepareUrl(String.format(POST_MINOR_ACTIVITY_URL, mAccount.getUsername()));
+		mHttpUtil.setContentType("application/json");
+		try {
+			if(mDebug) {
+				Log.d(APP_NAME, act.toString(3));
+			}
+			JSONObject ret = mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
+			if(mDebug)
+				Log.d(APP_NAME, ret.toString(3));
+			return true;
+		} catch(HttpUtilException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+			return false;
+		}  catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+			return false;
+		}
+	}
+	
 	public boolean shareNote(JSONObject obj) {
 		
 		JSONObject act = new JSONObject();
@@ -205,9 +273,9 @@ public class Pumpio {
 			appImage.put("url", "http://gitorious.org/puma-droid/puma/blobs/raw/master/res/drawable-xxhdpi/puma_logo.jpg");
 
 			generator
-			.put("summary", "<a href='http://gitorious.org/puma-droid'>Puma</a>  is a pump.io client for android")
-			.put("displayName", "Puma")
-			.put("id","org.macno.puma")
+			.put("summary", "<a href='http://gitorious.org/puma-droid'>PumpFM</a>  is a pump.io scrobbler for android")
+			.put("displayName", "PumpFM")
+			.put("id","org.macno.pumpfm")
 			.put("objectType","application")
 			.put("url", "http://gitorious.org/puma-droid")
 			.put("image", appImage);

@@ -13,6 +13,7 @@ public class PumaApplication extends Application {
 	
 	public static final String APP_NAME = "Puma";
 	
+	public static final String K_SSLHOSTS_SETTINGS = "SSLHostsSettings";
 	public static final String K_ACCOUNT_SETTINGS = "AccountsSettings";
 	public static final String K_OAUTH_SETTINGS = "OAuthSettings";
 	public static final String K_PUMA_SETTINGS = "PumaSettings";

@@ -5,6 +5,8 @@ import static org.macno.puma.PumaApplication.APP_NAME;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 
+import javax.net.ssl.SSLException;
+
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthException;
 
@@ -14,11 +16,13 @@ import org.macno.puma.R;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
 import org.macno.puma.manager.OAuthManager;
+import org.macno.puma.manager.SSLHostTrustManager;
 import org.macno.puma.provider.Pumpio;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -165,6 +169,10 @@ public class AccountAddActivity extends Activity {
 					
 					mOauthManager.prepareConsumerForHost(mHost);
 					
+				} catch(SSLException e) {
+					Log.e(APP_NAME, "SSLException", e);
+					mHandler.errorSSL(e.getMessage());
+					return;
 				} catch(Exception e) {
 					Log.e(APP_NAME, "Error getting consumer", e);
 					mHandler.errorOAuthURL(e.getMessage());
@@ -193,6 +201,21 @@ public class AccountAddActivity extends Activity {
 		Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 	}
 	
+	private void notifySSLError(String message) {
+		new AlertDialog.Builder(this)
+		.setTitle(getString(R.string.ssl_error))
+		.setMessage(message)
+		.setPositiveButton(R.string.trust_and_proceed, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				SSLHostTrustManager sslManager = new SSLHostTrustManager(mContext);
+				sslManager.addHost(mHost);
+				startDancing();
+			}
+		})
+		.setNeutralButton(getString(android.R.string.cancel), null).show();
+	}
 	
 	private void openOAuthWebPage(String url) {
 		mOAuthView.loadUrl(url);
@@ -215,7 +238,8 @@ public class AccountAddActivity extends Activity {
 		static final int MSG_OPEN_OAUTH_PAGE = 0;
 		static final int MSG_ERROR_OAUTH = 1;
 		static final int MSG_LOGGED_IN = 2;
-
+		static final int MSG_ERROR_SSL = 3;
+		
 		LoginHandler(AccountAddActivity target) {
 			mTarget = new WeakReference<AccountAddActivity>(target);
 		}
@@ -231,6 +255,10 @@ public class AccountAddActivity extends Activity {
 				
 			case MSG_ERROR_OAUTH:
 				target.notifyOAuthError(data.getString(K_ERROR_MESSAGE));
+				break;
+			
+			case MSG_ERROR_SSL:
+				target.notifySSLError(data.getString(K_ERROR_MESSAGE));
 				break;
 				
 			case MSG_LOGGED_IN:
@@ -251,6 +279,15 @@ public class AccountAddActivity extends Activity {
 		void errorOAuthURL(String error) {
 			Message msg = new Message();
 			msg.what=MSG_ERROR_OAUTH;
+			Bundle data = new Bundle();
+			data.putString(K_ERROR_MESSAGE, error);
+			msg.setData(data);
+			sendMessage(msg);
+		}
+		
+		void errorSSL(String error) {
+			Message msg = new Message();
+			msg.what=MSG_ERROR_SSL;
 			Bundle data = new Bundle();
 			data.putString(K_ERROR_MESSAGE, error);
 			msg.setData(data);

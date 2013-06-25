@@ -31,7 +31,6 @@ import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.params.HttpConnectionParams;
 
@@ -49,7 +48,7 @@ public class ImageManager implements ImageCache {
 	private Context mContext;
 	// In memory cache.
 	private Map<String, SoftReference<Bitmap>> mCache;
-	private HttpClient mClient;
+	//private HttpClient mClient;
 	// MD5 hasher.
 	private MessageDigest mDigest;
 
@@ -61,9 +60,6 @@ public class ImageManager implements ImageCache {
 	public ImageManager(Context context) {
 		mContext = context;
 		mCache = new HashMap<String, SoftReference<Bitmap>>();
-
-		HttpUtil hm = new HttpUtil();
-		mClient = hm.getHttpClient();
 
 		try {
 			mDigest = MessageDigest.getInstance("MD5");
@@ -125,6 +121,7 @@ public class ImageManager implements ImageCache {
 
 		//	Log.d(TAG, "Fetching image: " + url);
 
+		
 		HttpGet get = new HttpGet(url);
 		HttpConnectionParams.setConnectionTimeout(get.getParams(),
 				CONNECTION_TIMEOUT_MS);
@@ -133,8 +130,11 @@ public class ImageManager implements ImageCache {
 
 		HttpResponse response;
 
+		HttpUtil hm = new HttpUtil();
+		
+		hm.setHost(get.getURI().getHost(), true);
 		try {
-			response = mClient.execute(get);
+			response = hm.getHttpClient().execute(get);
 		} catch (ClientProtocolException e) {
 			throw new IOException("Invalid client protocol.");
 		}

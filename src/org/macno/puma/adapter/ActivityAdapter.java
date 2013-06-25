@@ -103,7 +103,8 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 					mPumpio.setAccount(mAccount);
 				}
 				JSONObject last = getItem(0);
-				JSONObject stream = mPumpio.fetchStream(mFeed, last.optJSONObject("object").optString("id"), null, 20);
+				Log.d(APP_NAME,"Asking for newer than "  + last.optString("id"));
+				JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
 				JSONArray items = stream.optJSONArray("items");
 				mItems = items;
 
@@ -117,13 +118,19 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 		mLoading=false;
 		if(mItems != null) {
 			for(int i=0;i<mItems.length();i++) {
+				// Check if activity id is already here.. 
+				
 				try {
 					JSONObject act = mItems.getJSONObject(i);
 					if(act.has("object")) {
+						String activityId = act.getString("id");
 						if(newer) {
-							insert(act, 0);
-						} else {
+							checkAndDeleteIfExists(activityId);
 							add(act);
+						} else {
+							if(!checkIfExists(activityId)) { // I'm moving backward. If act exists, it's newer.. 
+								add(act);
+							}
 						}
 					}
 				} catch(JSONException e) {
@@ -133,6 +140,32 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 			mItems = null;
 		}
 		notifyDataSetChanged();
+	}
+	
+
+	private boolean checkIfExists(String activityId) {
+		for(int i=getCount()-1;i>=0;i--) {
+			JSONObject act = getItem(i);
+			String actId = act.optString("id");
+			if(actId.equals(activityId)) {
+				Log.d(APP_NAME, "["+activityId+"] Found the same activity . Reporting it");
+				return true; 
+			}
+		}
+		return false;
+	}
+	
+	private boolean checkAndDeleteIfExists(String activityId) {
+		for(int i=getCount()-1;i>=0;i--) {
+			JSONObject act = getItem(i);
+			String actId = act.optString("id");
+			if(actId.equals(activityId)) {
+				Log.d(APP_NAME, "["+activityId+"] Found the same activity. Deleting it");
+				remove(act);
+				return true; 
+			}
+		}
+		return false;
 	}
 	
 	private static class StreamHandler extends Handler {

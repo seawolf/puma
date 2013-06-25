@@ -77,7 +77,14 @@ public class ActivityUtil {
 				what = "something";
 			}
 			if("note".equals(objectType)) {
-				note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
+				try {
+					String content = ActivityUtil.getContent(obj);
+					if(content != null)
+						note.setText(Html.fromHtml(content));
+				} catch(Exception e) {
+					Log.e(APP_NAME,"Setting note html: " + e.getMessage(),e);
+					note.setText(ActivityUtil.getContent(obj));
+				}
 			} else if("comment".equals(objectType)) {
 				note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
 			} else if("image".equals(objectType)) {

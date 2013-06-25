@@ -1,10 +1,11 @@
 package org.macno.puma.manager;
 
-
 import static org.macno.puma.PumaApplication.APP_NAME;
 import static org.macno.puma.PumaApplication.K_OAUTH_SETTINGS;
 
 import java.util.ArrayList;
+
+import javax.net.ssl.SSLException;
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
@@ -35,13 +36,15 @@ public class OAuthManager {
 
 	private CommonsHttpOAuthConsumer	mConsumer;
 	private CommonsHttpOAuthProvider 	mProvider;
+	private SSLHostTrustManager mSSLManager;
 	
 	public OAuthManager(Context context) {
 		mContext = context;
 		mSettings = context.getSharedPreferences(K_OAUTH_SETTINGS,Context.MODE_PRIVATE);
+		mSSLManager = new SSLHostTrustManager(mContext);
 	}
 	
-	public void prepareConsumerForHost(String host) throws HttpUtilException, OAuthException {
+	public void prepareConsumerForHost(String host) throws HttpUtilException, SSLException, OAuthException {
 		
 		String clientId = mSettings.getString(host, null);
 		String clientSecret = null;
@@ -51,8 +54,8 @@ public class OAuthManager {
 
 			String appName = mContext.getString(R.string.app_name);
 			
-			HttpUtil httpUtil = new HttpUtil(host);
-
+			HttpUtil httpUtil = new HttpUtil();
+			httpUtil.setHost(host,mSSLManager.hasHost(host));
 			
 			ArrayList<NameValuePair> params = new ArrayList<NameValuePair>(); 
 			params.add(new BasicNameValuePair("type", "client_associate"));
@@ -65,10 +68,11 @@ public class OAuthManager {
 			try {
 				// First try in https
 				json = httpUtil.getJsonObject("https://"+baseUrl, HttpUtil.POST, params);
-				
+			} catch(SSLException e) {
+				throw e;
 			} catch (HttpUtilException e) {
-				Log.e(APP_NAME, "https://"+baseUrl);
-				e.printStackTrace();
+				//Log.e(APP_NAME, "https://"+baseUrl);
+//				e.printStackTrace();
 				throw e;
 				// Do another try using http
 //				try {
@@ -102,7 +106,7 @@ public class OAuthManager {
 	public void removeConsumersKey() {
 		mSettings.edit().clear().commit();
 	}
-	public void prepare(String clientId, String clientSecret,String host) throws OAuthException , HttpUtilException {
+	public void prepare(String clientId, String clientSecret,String host) throws SSLException, OAuthException , HttpUtilException {
 
 		if(clientId==null && clientSecret == null) {
 			prepareConsumerForHost(host);
@@ -120,7 +124,9 @@ public class OAuthManager {
 				String.format(ACCESS_TOKEN_URL, host),
 				String.format(AUTHORIZE_URL, host)
 				);
-		mProvider.setOAuth10a(true);
+		HttpUtil httpUtil = new HttpUtil();
+		httpUtil.setHost(host,mSSLManager.hasHost(host));
+		mProvider.setHttpClient(httpUtil.getHttpClient());
 	}
 	
 	public void setConsumerTokenWithSecret(String token, String secret) {

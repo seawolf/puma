@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.net.ssl.SSLException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -81,71 +82,88 @@ public class HttpUtil {
 
 	private static final String IMAGE_MIME_JPG = "image/jpeg";
 	private static final String IMAGE_MIME_PNG = "image/png";
-	
+
 	public static final String GET = "GET";
 	public static final String POST = "POST";
 	public static final String DELETE = "DELETE";
 
 	private static final Integer DEFAULT_REQUEST_TIMEOUT = 30000;
 	private static final Integer DEFAULT_POST_REQUEST_TIMEOUT = 40000;
-	
+
 	//private AuthScope mAuthScope;
 	private DefaultHttpClient mClient;
 
 	private CommonsHttpOAuthConsumer consumer ;
 
 	private String mHost;
-	
+
 	private String mUserAgent = "Mozilla/5.0  (Linux; U; Android " + 
 			android.os.Build.VERSION.RELEASE + ") HttpUtil/" + VERSION + " Mobile";
-	
-	public HttpUtil() {
-		HttpParams params = getHttpParams();
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", 
-                SSLSocketFactory.getSocketFactory(), 443));
-        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-        mClient = new DefaultHttpClient(manager,params);
-	}
-	
+
+	//	public HttpUtil() {
+	//		HttpParams params = getHttpParams();
+	//        SchemeRegistry schemeRegistry = new SchemeRegistry();
+	//        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+	//        schemeRegistry.register(new Scheme("https", 
+	//                SSLSocketFactory.getSocketFactory(), 443));
+	//        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
+	//        mClient = new DefaultHttpClient(manager,params);
+	//	}
+
 	public HttpParams getHttpParams() {
-        final HttpParams params = new BasicHttpParams();
-        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-        HttpProtocolParams.setContentCharset(params, "UTF-8");
+		final HttpParams params = new BasicHttpParams();
+		HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+		HttpProtocolParams.setContentCharset(params, "UTF-8");
 
-        HttpConnectionParams.setStaleCheckingEnabled(params, true);
-//        HttpConnectionParams.setConnectionTimeout(params, 20 * 1000);
-        HttpConnectionParams.setSoTimeout(params, DEFAULT_REQUEST_TIMEOUT);
-        HttpConnectionParams.setSocketBufferSize(params, 2*8192);
+		HttpConnectionParams.setStaleCheckingEnabled(params, true);
+		//        HttpConnectionParams.setConnectionTimeout(params, 20 * 1000);
+		HttpConnectionParams.setSoTimeout(params, DEFAULT_REQUEST_TIMEOUT);
+		HttpConnectionParams.setSocketBufferSize(params, 2*8192);
 
-//        HttpClientParams.setRedirecting(params, true);
+		//        HttpClientParams.setRedirecting(params, true);
 
 		HttpProtocolParams.setUserAgent(params, getUserAgent());
-        HttpProtocolParams.setUseExpectContinue(params,false);
-        
-        return params;
-        
+		HttpProtocolParams.setUseExpectContinue(params,false);
+
+		return params;
+
 	}
-	
-    private String getUserAgent() {
-    	return mUserAgent;
-    }
-    
-	public HttpUtil(String host) {
-		HttpParams params = getHttpParams();
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-        mClient = new DefaultHttpClient(manager,params);
+
+	private String getUserAgent() {
+		return mUserAgent;
+	}
+
+	//	public HttpUtil(String host) {
+	//		HttpParams params = getHttpParams();
+	//        SchemeRegistry schemeRegistry = new SchemeRegistry();
+	//        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+	//        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+	//        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
+	//        mClient = new DefaultHttpClient(manager,params);
+	//		mHost=host;
+	//	}
+
+	public void setHostXXX(String host) {
 		mHost=host;
 	}
 
-	public void setHost(String host) {
+	public void setHost(String host,boolean untrusted) {
+		HttpParams params = getHttpParams();
+		SchemeRegistry schemeRegistry = new SchemeRegistry();
+		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+
 		mHost=host;
+		if(untrusted) {
+			schemeRegistry.register(new Scheme("https", 
+					UntrustedSSLSocketFactory.getSocketFactory(), 443));
+		} else {
+			schemeRegistry.register(new Scheme("https", 
+					SSLSocketFactory.getSocketFactory(), 443));
+		}
+		ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
+		mClient = new DefaultHttpClient(manager,params);
 	}
-	
+
 	public void setCredentials(String username, String password) {
 
 		Credentials defaultcreds = new UsernamePasswordCredentials(username, password);
@@ -156,34 +174,37 @@ public class HttpUtil {
 		cP.setCredentials(new AuthScope(host, AuthScope.ANY_PORT, AuthScope.ANY_REALM), defaultcreds);
 		mClient.setCredentialsProvider(cP);
 		mClient.addRequestInterceptor(preemptiveAuth, 0);
-		
+
 	}
 
 	public void setOAuthConsumer(CommonsHttpOAuthConsumer consumer ) {
 		this.consumer=consumer;
 	}
-	
+
 	public CommonsHttpOAuthConsumer getOAuthConsumer() {
 		return consumer;
 	}
-	
+
 	public DefaultHttpClient getHttpClient() {
 		return mClient;
 	}
-	
+
 	public JSONObject getJsonObject(String url) throws HttpUtilException {
 		return getJsonObject(url,GET);
 	}
-	
+
 	public JSONObject getJsonObject(String url, String httpMethod) throws HttpUtilException {
 		return getJsonObject(url,httpMethod,"");
 	}
-	
+
 	public JSONObject getJsonObject(String url, String httpMethod,
-			ArrayList<NameValuePair> params) throws HttpUtilException {
+			ArrayList<NameValuePair> params) throws HttpUtilException, SSLException {
 		JSONObject json = null;
 		try {
 			json = new JSONObject(StreamUtil.toString(requestData(url,httpMethod,params)));
+		} catch (SSLException e ) {
+			throw e;
+
 		} catch (JSONException e) {
 			throw new HttpUtilException(998,"Non json response: " + e.getMessage());
 		} catch (IOException e) {
@@ -201,7 +222,7 @@ public class HttpUtil {
 		}
 		return json;
 	}
-	
+
 	public JSONObject getJsonObject(String url, String httpMethod, String requestBody) throws HttpUtilException {
 		JSONObject json = null;
 		try {
@@ -213,17 +234,17 @@ public class HttpUtil {
 		}
 		return json;
 	}
-	
-	
+
+
 	public JSONArray getJsonArray(String url) throws HttpUtilException {
 		return getJsonArray(url,GET,null);
 	}
-	
+
 	public JSONArray getJsonArray(String url, String httpMethod) 
-									throws HttpUtilException {
+			throws HttpUtilException {
 		return getJsonArray(url,httpMethod,null);
 	}
-	
+
 	public JSONArray getJsonArray(String url, String httpMethod,
 			ArrayList<NameValuePair> params) throws HttpUtilException {
 		return getJsonArray(url,httpMethod,params,false);
@@ -251,23 +272,23 @@ public class HttpUtil {
 		return json;
 	}
 
-	public InputStream requestData(String url, String httpMethod,ArrayList<NameValuePair> params) throws HttpUtilException {
+	public InputStream requestData(String url, String httpMethod,ArrayList<NameValuePair> params) throws HttpUtilException, SSLException {
 		return requestData(url, httpMethod,params,0);
 	}
-	
-	public InputStream requestData(String url, String httpMethod,String requestBody) throws HttpUtilException {
+
+	public InputStream requestData(String url, String httpMethod,String requestBody) throws HttpUtilException, SSLException {
 		return requestData(url, httpMethod,requestBody,0);
 	}
-	
+
 	private HashMap<String,String> mHeaders;
-	
+
 	public void setContentType(String mimeType) {
 		if(mHeaders == null) {
 			mHeaders = new HashMap<String, String>();
 		}
 		mHeaders.put("Content-Type", mimeType);
 	}
-	
+
 	public void setExtraHeaders(HashMap<String,String> headers) {
 		mHeaders = headers;
 	}
@@ -280,15 +301,15 @@ public class HttpUtil {
 		}
 	}
 
-	public InputStream requestData(String url, String httpMethod,ArrayList<NameValuePair> params, int loop) throws HttpUtilException {
+	public InputStream requestData(String url, String httpMethod,ArrayList<NameValuePair> params, int loop) throws HttpUtilException, SSLException {
 		return requestData(url,httpMethod, params, null, loop);
 	}
-	
-	public InputStream requestData(String url, String httpMethod,String body, int loop) throws HttpUtilException {
+
+	public InputStream requestData(String url, String httpMethod,String body, int loop) throws HttpUtilException, SSLException {
 		return requestData(url,httpMethod, null, body, loop);
 	}
-	
-	public InputStream requestData(String url, String httpMethod, ArrayList<NameValuePair> params, String body, int loop) throws HttpUtilException {
+
+	public InputStream requestData(String url, String httpMethod, ArrayList<NameValuePair> params, String body, int loop) throws HttpUtilException, SSLException {
 
 		URI uri;
 
@@ -333,14 +354,14 @@ public class HttpUtil {
 			try {
 				consumer.sign(method);
 				mClient.setRedirectHandler(new RedirectHandler() {
-					
+
 					// Ignore
 					@Override
 					public boolean isRedirectRequested(HttpResponse response,
 							HttpContext context) {
 						return false;
 					}
-					
+
 					@Override
 					public URI getLocationURI(HttpResponse response, HttpContext context)
 							throws ProtocolException {
@@ -348,14 +369,14 @@ public class HttpUtil {
 					}
 				});
 			} catch (OAuthMessageSignerException e) {
-				 e.printStackTrace();
+				e.printStackTrace();
 			}catch (OAuthExpectationFailedException e) {
 				e.printStackTrace();
 			} catch (OAuthCommunicationException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		HttpResponse response;
 		try {
 			Header[] headers = method.getAllHeaders();
@@ -363,11 +384,13 @@ public class HttpUtil {
 				Log.d("HttpUtil", headers[i].getName() + "\n\t" + headers[i].getValue());
 			}
 			response = mClient.execute(method);
+		} catch(SSLException e) {
+			throw e;
 		} catch (ClientProtocolException e) {
-			throw new HttpUtilException(800,"HTTP protocol error.");
+			throw new HttpUtilException(800,"HTTP protocol error: " + e.getMessage());
 		} catch(IOException e) {
 			e.printStackTrace();
-			throw new HttpUtilException(800,"HTTP protocol error.");
+			throw new HttpUtilException(800,e.getMessage());
 		}
 
 		int statusCode = response.getStatusLine().getStatusCode();
@@ -400,20 +423,20 @@ public class HttpUtil {
 			} catch (IOException e) {
 				throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 			}
-			
+
 		} else if ( (statusCode == 301 || statusCode == 302 || statusCode == 303)) {
-//			Log.v("HttpManager", "Got : " + statusCode);
+			//			Log.v("HttpManager", "Got : " + statusCode);
 			if(loop > 3) {
-				 throw new HttpUtilException(statusCode,"Too many redirect: " + url);
+				throw new HttpUtilException(statusCode,"Too many redirect: " + url);
 			}
 			Header hLocation = response.getLastHeader("Location");
 			if (hLocation != null) {
 				Log.v("HttpManager", "Got : " + hLocation.getValue());
 				return requestData(hLocation.getValue(), httpMethod, params, body, loop+1);
 			} else {
-				 throw new HttpUtilException(statusCode,"redirect without location header: ");
+				throw new HttpUtilException(statusCode,"redirect without location header: ");
 			}
-			
+
 		} else if (statusCode != 200) {
 			throw new HttpUtilException(999,"Unmanaged response code: " + statusCode);
 		}
@@ -425,9 +448,9 @@ public class HttpUtil {
 			throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 		}
 	}
-	
+
 	private InputStream requestData(String url, ArrayList<NameValuePair> params, String attachmentParam, File attachment) 
-			throws HttpUtilException {
+			throws HttpUtilException, SSLException {
 
 		URI uri;
 
@@ -436,14 +459,14 @@ public class HttpUtil {
 		} catch (URISyntaxException e) {
 			throw new HttpUtilException(1000,"Invalid URL.");
 		}
-		
+
 		HttpPost post = new HttpPost(uri);
-		
+
 		HttpResponse response;
 
 		// create the multipart request and add the parts to it 
 		MultipartEntity requestContent = new MultipartEntity(); 
-//		long len = attachment.length();
+		//		long len = attachment.length();
 		try {
 			InputStream ins = new FileInputStream(attachment);
 			InputStreamEntity ise = new InputStreamEntity(ins, -1L); 
@@ -454,7 +477,7 @@ public class HttpUtil {
 
 			if (params != null) {
 				for (NameValuePair param : params) {
-//					len += param.getValue().getBytes().length;
+					//					len += param.getValue().getBytes().length;
 					requestContent.addPart(param.getName(), new StringBody(param.getValue()));
 				}
 			}
@@ -462,7 +485,7 @@ public class HttpUtil {
 			throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 		}
 		post.setEntity(requestContent); 
-		
+
 		if (mHeaders != null) {
 			Iterator<String> headKeys = mHeaders.keySet().iterator();
 			while(headKeys.hasNext()) {
@@ -474,14 +497,14 @@ public class HttpUtil {
 			try {
 				consumer.sign(post);
 				mClient.setRedirectHandler(new RedirectHandler() {
-					
+
 					// Ignore
 					@Override
 					public boolean isRedirectRequested(HttpResponse response,
 							HttpContext context) {
 						return false;
 					}
-					
+
 					@Override
 					public URI getLocationURI(HttpResponse response, HttpContext context)
 							throws ProtocolException {
@@ -500,6 +523,8 @@ public class HttpUtil {
 			mClient.getParams().setIntParameter(HttpConnectionParams.CONNECTION_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
 			mClient.getParams().setIntParameter(HttpConnectionParams.SO_TIMEOUT, DEFAULT_POST_REQUEST_TIMEOUT);
 			response = mClient.execute(post);
+		} catch(SSLException e) { 
+			throw e;
 		} catch (ClientProtocolException e) {
 			throw new HttpUtilException(1500,"ClientProtocolException: " + e.getMessage());
 		} catch(IOException e) {
@@ -508,7 +533,7 @@ public class HttpUtil {
 
 		int statusCode = response.getStatusLine().getStatusCode();
 
-		
+
 		if (statusCode == 401) {
 			throw new HttpUtilException(401,"Unauthorized: " + url);
 		} else if (statusCode == 403 || statusCode == 406) {
@@ -524,7 +549,7 @@ public class HttpUtil {
 				throw new HttpUtilException(statusCode, json.getString("error"));
 			} catch (IllegalStateException e) {
 				throw new HttpUtilException(1400,"IllegalStateException: " + e.getMessage());
-				
+
 			} catch (JSONException e) {
 				throw new HttpUtilException(998,"Non json response: " + e.toString());
 			}
@@ -542,15 +567,15 @@ public class HttpUtil {
 	}
 
 	public String getResponseAsString(String url)
-		throws HttpUtilException {
+			throws HttpUtilException {
 		return getResponseAsString(url,GET,null);
 	}
-	
+
 	public String getResponseAsString(String url, String httpMethod)
-		throws HttpUtilException {
+			throws HttpUtilException {
 		return getResponseAsString(url,httpMethod,null);
 	}
-	
+
 	public String getResponseAsString(String url, String httpMethod,
 			ArrayList<NameValuePair> params) throws HttpUtilException {
 		try {
@@ -559,9 +584,9 @@ public class HttpUtil {
 		} catch(IOException e) {
 			throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 		}
-		
+
 	}
-	
+
 	public String getResponseAsString(String url, ArrayList<NameValuePair> params,String attachmentParam, File attachment) throws HttpUtilException {
 		try {
 			String ret = StreamUtil.toString(requestData(url,params,attachmentParam,attachment));
@@ -570,17 +595,17 @@ public class HttpUtil {
 			throw new HttpUtilException(1200,"IOException: " + e.getMessage());
 		}
 	}
-	
-	
+
+
 	public Document getDocument(String url, String httpMethod,ArrayList<NameValuePair> params) throws IOException, HttpUtilException {
-		 Document  dom = null;
+		Document  dom = null;
 		InputStream is = null;
 		try {
 			is = requestData(url,httpMethod,params);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	        
-	        DocumentBuilder builder = factory.newDocumentBuilder();
-	        dom = builder.parse(is);
+
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			dom = builder.parse(is);
 		} catch(ParserConfigurationException e) {
 			e.printStackTrace();
 			throw new HttpUtilException(980,"Parser exception: " + e.getMessage());
@@ -594,38 +619,38 @@ public class HttpUtil {
 		}
 		return dom;
 	}
-	
-	
+
+
 	private HttpRequestInterceptor preemptiveAuth = new HttpRequestInterceptor() {
-	    
-	    public void process(
-	            final HttpRequest request, 
-	            final HttpContext context) throws HttpException, IOException {
-	        
-	        AuthState authState = (AuthState) context.getAttribute(
-	                ClientContext.TARGET_AUTH_STATE);
-	        CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(
-	                ClientContext.CREDS_PROVIDER);
-	        HttpHost targetHost = (HttpHost) context.getAttribute(
-	                ExecutionContext.HTTP_TARGET_HOST);
-	        
-	        // If not auth scheme has been initialized yet
-	        if (authState.getAuthScheme() == null) {
-	            AuthScope authScope = new AuthScope(
-	                    targetHost.getHostName(), 
-	                    targetHost.getPort());
-	            // Obtain credentials matching the target host
-	            Credentials creds = credsProvider.getCredentials(authScope);
-	            // If found, generate BasicScheme preemptively
-	            if (creds != null) {
-	                authState.setAuthScheme(new BasicScheme());
-	                authState.setCredentials(creds);
-	            }
-	        }
-	    }
-	    
+
+		public void process(
+				final HttpRequest request, 
+				final HttpContext context) throws HttpException, IOException {
+
+			AuthState authState = (AuthState) context.getAttribute(
+					ClientContext.TARGET_AUTH_STATE);
+			CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(
+					ClientContext.CREDS_PROVIDER);
+			HttpHost targetHost = (HttpHost) context.getAttribute(
+					ExecutionContext.HTTP_TARGET_HOST);
+
+			// If not auth scheme has been initialized yet
+			if (authState.getAuthScheme() == null) {
+				AuthScope authScope = new AuthScope(
+						targetHost.getHostName(), 
+						targetHost.getPort());
+				// Obtain credentials matching the target host
+				Credentials creds = credsProvider.getCredentials(authScope);
+				// If found, generate BasicScheme preemptively
+				if (creds != null) {
+					authState.setAuthScheme(new BasicScheme());
+					authState.setCredentials(creds);
+				}
+			}
+		}
+
 	};
-	
+
 	private  class ByteArrayBody extends AbstractContentBody {
 
 		private final byte[] bytes;
