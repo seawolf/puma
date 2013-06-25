@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Puma</string>
+    
+    <string name="action_settings">Ajustes</string>
+    <string name="action_logout">Cerrar sesión</string>
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_share">Compartir</string>
+    <string name="action_reply">Responder</string>
+    <string name="action_compose">Redactar</string>
+    <string name="action_add_account">Agregar cuenta</string>
+    <string name="action_post">Publicar</string>
+    
+    <string name="welcome">¡Bienvenido!</string>
+    <string name="welcome_user">¡Bienvenido %s!</string>
+    <string name="insert_webfinger_id">Webfinger ID</string>
+	<string name="insert_webfinger_id_desc">Introduce tu ID en tu sitio pump.io.\nParce una dirección de correo electrónico,\ncon tu apodo y después "@"\ny después tu servidor</string>
+	<string name="webfinger_sample">username@example.com</string>
+	<string name="webfinger_not_valid">No válido</string>
+	<string name="btn_next">Siguiente</string>
+	<string name="auth_progress_msg">Por favor espera, autenticándose</string>
+	<string name="post_complete">Nota publicada</string>
+	<string name="title">Título</string>
+	<string name="title_hint_optional">Título (opcional)</string>
+	<string name="compose_note_hint">Redactar nota</string>
+    <string name="status">¿Qué hay de nuevo?</string>
+    <string name="update">Enviar</string>
+    <string name="upload">Subir</string>
+	<string name="send_from_account">Enviar desde</string>
+	<string name="menu_account">Más...</string>
+	<string name="public_post">Nota pública</string>
+	<string name="send_location">Adjuntar localización</string>
+	<string name="confirm_logout">¿Estás seguro?</string>
+	<string name="warning">Advertencia</string>
+    <string name="error">Error</string>
+	<string name="error_generic">Lo siento, algo fue mal...</string>
+	<string name="error_generic_detail">Lo siento, algo fue mal...\n%s</string>
+	
+	<string name="oauth_error_user_refused">No autorizaste la conexión.\nNo se puede continuar</string>
+	
+	<string name="msg_posted">%1$s envió %2$s</string>
+	<string name="msg_replied_to">%1$s respondió a %2$s</string>
+	<string name="msg_favorited">%1$s marcó como favorito %2$s</string>
+	<string name="msg_shareded">%1$s compartió %2$s</string>
+	<string name="msg_shareded_from">%1$s compartió %2$s desde %3$s</string>
+	<string name="msg_favorited_inreplyto">%1$s marcó como favorito %2$s en respuesta a %3$s</string>
+	<string name="objecttype_comment">un comentario</string>
+	<string name="objecttype_image">una imagen</string>
+	<string name="objecttype_note">una nota</string>
+	<string name="note_shared">Nota compartida</string>
+	
+	<!-- Dates -->
+	<string name="few_seconds">hace unos segundos</string>
+	<string name="one_minute_ago">"hace un minoto"</string>
+	<string name="minutes_ago">"hace unos %1$s minutos"</string>
+	<string name="one_hour_ago">"hace una hora"</string>
+	<string name="hours_ago">"hace unas %1$s horas"</string>
+	<string name="one_day_ago">"hace un día"</string>
+	<string name="days_ago">"hace unos %1$s días"</string>
+	<string name="one_month_ago">"hace un mes"</string>
+	<string name="months_ago">"hace unos %1$s meses"</string>
+	<string name="one_year_ago">"hace un año"</string>
+	
+</resources>
