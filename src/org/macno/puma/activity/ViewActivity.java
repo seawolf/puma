@@ -111,31 +111,33 @@ public class ViewActivity extends Activity {
 		if(likes != null) {
 			int totalItems = likes.optInt("totalItems");
 			JSONArray items = likes.optJSONArray("items");
-			StringBuilder whoLike = new StringBuilder();
-			for(int i=0;i<items.length();i++) {
-				JSONObject item = items.optJSONObject(i);
-				if(i > 0) {
-					whoLike.append(", ");
+			if(items != null) {
+				StringBuilder whoLike = new StringBuilder();
+				for(int i=0;i<items.length();i++) {
+					JSONObject item = items.optJSONObject(i);
+					if(i > 0) {
+						whoLike.append(", ");
+					}
+					String author = item.optString("displayName");
+					if(author == null) {
+						author =  item.optString("preferredUsername");
+					}
+					whoLike.append(author);
 				}
-				String author = item.optString("displayName");
-				if(author == null) {
-					author =  item.optString("preferredUsername");
+				TextView tv_likes = new TextView(mContext);
+				tv_likes.setPadding(5, 5, 5, 5);
+				tv_likes.setTextSize(12);
+				if(items.length()==1) {
+					tv_likes.setText(getString(R.string.who_likes,whoLike.toString()));
+				} else if( items.length() > 1 ){
+					if(items.length() != totalItems) {
+						tv_likes.setText(getString(R.string.who_like_and_more,whoLike.toString(), (totalItems - items.length())));
+					} else {
+						tv_likes.setText(getString(R.string.who_like,whoLike.toString()));
+					}
 				}
-				whoLike.append(author);
+				ll_parent.addView(tv_likes);
 			}
-			TextView tv_likes = new TextView(mContext);
-			tv_likes.setPadding(5, 5, 5, 5);
-			tv_likes.setTextSize(12);
-			if(items.length()==1) {
-				tv_likes.setText(getString(R.string.who_likes,whoLike.toString()));
-			} else if( items.length() > 1 ){
-				if(items.length() != totalItems) {
-					tv_likes.setText(getString(R.string.who_like_and_more,whoLike.toString(), (totalItems - items.length())));
-				} else {
-					tv_likes.setText(getString(R.string.who_like,whoLike.toString()));
-				}
-			}
-			ll_parent.addView(tv_likes);
 		}
 	}
 	
