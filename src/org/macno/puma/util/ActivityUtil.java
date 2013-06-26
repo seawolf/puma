@@ -24,11 +24,12 @@ public class ActivityUtil {
 	}
 	
 	public static String getActorBestName(JSONObject actor) {
-		
-		if(actor.has("displayName")) {
-			return actor.optString("displayName");
-		} else if(actor.has("preferredUsername")) {
-			return actor.optString("preferredUsername");
+		if(actor != null) {
+			if(actor.has("displayName")) {
+				return actor.optString("displayName");
+			} else if(actor.has("preferredUsername")) {
+				return actor.optString("preferredUsername");
+			}
 		}
 		return null;
 	}
@@ -55,6 +56,10 @@ public class ActivityUtil {
 	}
 	
 	public static LinearLayout getViewActivity(Context mContext,JSONObject act) {
+		return ActivityUtil.getViewActivity(mContext, act, true);
+	}
+	
+	public static LinearLayout getViewActivity(Context mContext,JSONObject act, boolean showCounterBar) {
 		
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.activity_row, null);
@@ -64,6 +69,8 @@ public class ActivityUtil {
 		String objectType = obj.optString("objectType");
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		TextView note = (TextView)view.findViewById(R.id.note);
+		
+		
 		if("post".equals(act.optString("verb"))) {
 			String message="";
 			String what = "";
@@ -81,6 +88,10 @@ public class ActivityUtil {
 					String content = ActivityUtil.getContent(obj);
 					if(content != null)
 						note.setText(Html.fromHtml(content));
+					
+					if(showCounterBar) {
+						ActivityUtil.showCounterBar(view, obj);
+					}
 				} catch(Exception e) {
 					Log.e(APP_NAME,"Setting note html: " + e.getMessage(),e);
 					note.setText(ActivityUtil.getContent(obj));
@@ -95,9 +106,15 @@ public class ActivityUtil {
 				noteImage.setVisibility(View.VISIBLE);
 				noteImage.setRemoteURI(ActivityUtil.getObjectImage(obj));
 				noteImage.loadImage();
+				
+				if(showCounterBar) {
+					ActivityUtil.showCounterBar(view, obj);
+				}
 			}
 			message = mContext.getString(R.string.msg_posted,ActivityUtil.getActorBestName(actor), what);
 			sender.setText(message);
+			
+			
 		} else if ("favorite".equals(act.optString("verb"))) {
 			String message="";
 			String what = "";
@@ -113,6 +130,7 @@ public class ActivityUtil {
 			message = mContext.getString(R.string.msg_favorited,ActivityUtil.getActorBestName(actor),  what);
 			sender.setText(message);
 			note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
+			
 		} else if ("share".equals(act.optString("verb"))) {
 			String message="";
 			String what = "";
@@ -159,4 +177,62 @@ public class ActivityUtil {
 		
 	}
 	
+	public static void showCounterBar(LinearLayout view, JSONObject obj) {
+		LinearLayout ll_counter = (LinearLayout)view.findViewById(R.id.ll_counter);
+		TextView cnt_replies = (TextView)view.findViewById(R.id.cnt_replies);
+		TextView cnt_likes = (TextView)view.findViewById(R.id.cnt_likes);
+		TextView cnt_shares = (TextView)view.findViewById(R.id.cnt_shares);
+		ll_counter.setVisibility(View.VISIBLE);
+
+		cnt_replies.setText(obj.optJSONObject("replies").optString("totalItems"));
+		cnt_likes.setText(obj.optJSONObject("likes").optString("totalItems"));
+		cnt_shares.setText(obj.optJSONObject("shares").optString("totalItems"));
+	}
+	
+	public static LinearLayout getViewComment(Context context, LayoutInflater inflater, JSONObject item, boolean even) {
+		if(item == null) {
+			Log.d(APP_NAME,"getViewComment but item is null");
+			return null;
+		}
+		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.comment_row, null);
+		
+		LinearLayout ll_comment = (LinearLayout)view.findViewById(R.id.ll_comment);
+		int color = even ? R.color.bg_comment_even : R.color.bg_comment_odd;
+		ll_comment.setBackgroundColor( context.getResources().getColor(color) );
+		TextView tv_comment = (TextView)view.findViewById(R.id.comment);
+		tv_comment.setText(item.optString("content"));
+		
+		JSONObject actor = item.optJSONObject("author");
+		if(actor != null ) {
+			RemoteImageView rim = (RemoteImageView)view.findViewById(R.id.riv_sender);
+			String avatar = ActivityUtil.getImageUrl(actor);
+			if(avatar == null) {
+				avatar = "http://macno.org/images/unkown.png";
+			}
+			rim.setRemoteURI(avatar);
+			rim.loadImage();
+			
+			TextView sender = (TextView)view.findViewById(R.id.tv_sender);
+			sender.setText(ActivityUtil.getActorBestName(actor));
+		}
+		
+		TextView published = (TextView)view.findViewById(R.id.tv_published);
+		String s_published = item.optString("published");
+		if(s_published != null) {
+			Log.d(APP_NAME,"published <<< " + s_published);
+			try {
+				s_published = DateUtils.getRelativeDate(context, 
+						DateUtils.parseRFC3339Date(s_published)
+						);
+				Log.d(APP_NAME,"published >>> " + s_published);
+				published.setText(s_published);
+			} catch (ParseException e) {
+				Log.e(APP_NAME,e.getMessage(),e);
+			}
+			
+		}
+		
+		return view;
+	}
+			
 }

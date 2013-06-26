@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    
+    <color name="bg_stream">#999</color>
+    <color name="bg_notice">#BBB</color>
+    <color name="bg_notice_box">#DDD</color>
+    
+    <color name="bg_comment_even">#CCC</color>
+    <color name="bg_comment_odd">#EEE</color>
+    
+</resources>

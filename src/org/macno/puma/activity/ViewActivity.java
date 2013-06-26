@@ -2,6 +2,7 @@ package org.macno.puma.activity;
 
 import java.lang.ref.WeakReference;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.macno.puma.R;
@@ -16,9 +17,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ViewActivity extends Activity {
@@ -63,14 +66,11 @@ public class ViewActivity extends Activity {
         }
         
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
-        ll_parent.addView(ActivityUtil.getViewActivity(mContext, mActivity), 0);
+        ll_parent.addView(ActivityUtil.getViewActivity(mContext, mActivity,false));
 
-//		EditText debug = (EditText)findViewById(R.id.et_activity_debug);
-//		try {
-//			debug.setText(mActivity.toString(3));
-//		} catch (JSONException e) {
-//			e.printStackTrace();
-//		}
+        addLikes(ll_parent);
+        
+        addComments(ll_parent);
 	}
 	
 	@Override
@@ -80,6 +80,65 @@ public class ViewActivity extends Activity {
 		super.onSaveInstanceState(outState);
 	}
 
+	private void addComments(LinearLayout ll_parent ) {
+		JSONObject obj = mActivity.optJSONObject("object");
+		if(obj == null) {
+			return;
+		}
+		JSONObject replies = obj.optJSONObject("replies");
+		
+		if(replies != null) {
+			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			
+			JSONArray items = replies.optJSONArray("items");
+			if(items != null) {
+				for(int i=items.length()-1;i>=0;i--) {
+					LinearLayout view = ActivityUtil.getViewComment(mContext, inflater, items.optJSONObject(i), (i % 2 == 0));
+					if(view != null) {
+						ll_parent.addView(view);
+					}
+				}
+			}
+		}
+	}
+	
+	private void addLikes(LinearLayout ll_parent ) {
+		JSONObject obj = mActivity.optJSONObject("object");
+		if(obj == null) {
+			return;
+		}
+		JSONObject likes = obj.optJSONObject("likes");
+		if(likes != null) {
+			int totalItems = likes.optInt("totalItems");
+			JSONArray items = likes.optJSONArray("items");
+			StringBuilder whoLike = new StringBuilder();
+			for(int i=0;i<items.length();i++) {
+				JSONObject item = items.optJSONObject(i);
+				if(i > 0) {
+					whoLike.append(", ");
+				}
+				String author = item.optString("displayName");
+				if(author == null) {
+					author =  item.optString("preferredUsername");
+				}
+				whoLike.append(author);
+			}
+			TextView tv_likes = new TextView(mContext);
+			tv_likes.setPadding(5, 5, 5, 5);
+			tv_likes.setTextSize(12);
+			if(items.length()==1) {
+				tv_likes.setText(getString(R.string.who_likes,whoLike.toString()));
+			} else if( items.length() > 1 ){
+				if(items.length() != totalItems) {
+					tv_likes.setText(getString(R.string.who_like_and_more,whoLike.toString(), (totalItems - items.length())));
+				} else {
+					tv_likes.setText(getString(R.string.who_like,whoLike.toString()));
+				}
+			}
+			ll_parent.addView(tv_likes);
+		}
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.

@@ -12,6 +12,10 @@
     <string name="action_add_account">Add account</string>
     <string name="action_post">Publish</string>
     
+    <string name="who_like">%s like this.</string>
+    <string name="who_like_and_more">%1$s and %2$s more like this.</string>
+    <string name="who_likes">%s likes this.</string>
+    
     <string name="welcome">Welcome!</string>
     <string name="welcome_user">Welcome %s!</string>
     <string name="insert_webfinger_id">Webfinger ID</string>
@@ -52,6 +56,10 @@
 	<string name="objecttype_image">an image</string>
 	<string name="objecttype_note">a note</string>
 	<string name="note_shared">Note shared</string>
+	
+	<string name="msg_replies">Replies</string>
+	<string name="msg_likes">Likes</string>
+	<string name="msg_shares">Shares</string>
 	
 	<!-- Dates -->
 	<string name="few_seconds">a few seconds ago</string>
