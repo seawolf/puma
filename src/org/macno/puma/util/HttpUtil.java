@@ -45,6 +45,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
@@ -314,6 +315,10 @@ public class HttpUtil {
 		URI uri;
 
 		try {
+			if(GET.equals(httpMethod) && params != null) {
+				 String paramString = URLEncodedUtils.format(params, "utf-8");
+				 url += url.contains("?") ? paramString : "?" + paramString;
+			}
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
 			throw new HttpUtilException(1000,"Invalid URL: " + url);
@@ -339,7 +344,9 @@ public class HttpUtil {
 		} else if (DELETE.equals(httpMethod)) {
 			method = new HttpDelete(uri);
 		} else {
+			
 			method = new HttpGet(uri);
+			
 		}
 
 		if (mHeaders != null) {
