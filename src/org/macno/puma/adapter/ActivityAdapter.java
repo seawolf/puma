@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.macno.puma.R;
 import org.macno.puma.activity.ViewActivity;
 import org.macno.puma.core.Account;
 import org.macno.puma.provider.Pumpio;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 
@@ -81,6 +83,10 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 					mPumpio.setAccount(mAccount);
 				}
 				JSONObject stream = mPumpio.fetchStream(mFeed, null, null, 20);
+				if(stream == null) {
+					mHandler.sendLoadStramFailed();
+					return;
+				}
 				JSONArray items = stream.optJSONArray("items");
 				mItems = items;
 
@@ -168,12 +174,17 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 		return false;
 	}
 	
+	private void notifyLoadStramFailed() {
+		Toast.makeText(mContext, R.string.load_stream_failed, Toast.LENGTH_LONG).show();
+	}
+	
 	private static class StreamHandler extends Handler {
     	
     	private final WeakReference<ActivityAdapter> mTarget;
     	
     	private static final int MSG_POST_OK = 0;
     	private static final int MSG_RELOADED_NEWER = 1;
+    	private static final int MSG_LOAD_STREAM_FAILED = 2;
     	
     	StreamHandler(ActivityAdapter target) {
 			mTarget = new WeakReference<ActivityAdapter>(target);
@@ -191,6 +202,10 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 			case MSG_POST_OK:
 				target.reloadAdapter(false);
 				break;
+				
+			case MSG_LOAD_STREAM_FAILED:
+				target.notifyLoadStramFailed();
+				break;
 			}
 		}
     	
@@ -200,6 +215,10 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
     	
     	void sendReloadedNewer() {
     		sendEmptyMessage(MSG_RELOADED_NEWER);
+    	}
+    	
+    	void sendLoadStramFailed() {
+    		sendEmptyMessage(MSG_LOAD_STREAM_FAILED);
     	}
     }
 	
