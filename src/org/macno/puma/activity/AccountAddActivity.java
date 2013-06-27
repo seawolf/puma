@@ -97,8 +97,14 @@ public class AccountAddActivity extends Activity {
 
 	private void switchView(View view) {
 		mWebfingerView.setVisibility(view == mWebfingerView ? View.VISIBLE : View.GONE);
-		mOAuthView.setVisibility(view == mOAuthView ? View.VISIBLE : View.GONE);
 		mProgressView.setVisibility(view == mProgressView ? View.VISIBLE : View.GONE);
+		
+		if(view == mOAuthView) {
+			mOAuthView.setVisibility(View.VISIBLE);
+			mOAuthView.requestFocus(View.FOCUS_DOWN);
+		} else {
+			mOAuthView.setVisibility(View.GONE);
+		}
 	}
 
 	private void startDancing() {
