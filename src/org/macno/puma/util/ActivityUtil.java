@@ -200,7 +200,12 @@ public class ActivityUtil {
 		int color = even ? R.color.bg_comment_even : R.color.bg_comment_odd;
 		ll_comment.setBackgroundColor( context.getResources().getColor(color) );
 		TextView tv_comment = (TextView)view.findViewById(R.id.comment);
-		tv_comment.setText(item.optString("content"));
+		
+		String content = item.optString("content");
+		if(content == null) {
+			return null;
+		}
+		tv_comment.setText(Html.fromHtml(content));
 		
 		JSONObject actor = item.optJSONObject("author");
 		if(actor != null ) {
