@@ -16,6 +16,8 @@
     <string name="who_like_and_more">%1$s and %2$s more like this.</string>
     <string name="who_likes">%s likes this.</string>
     
+    <string name="load_stream_failed">Failed to load the feed</string>
+    
     <string name="welcome">Welcome!</string>
     <string name="welcome_user">Welcome %s!</string>
     <string name="insert_webfinger_id">Webfinger ID</string>
