@@ -97,7 +97,9 @@ public class ActivityUtil {
 					note.setText(ActivityUtil.getContent(obj));
 				}
 			} else if("comment".equals(objectType)) {
-				note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
+				String content = ActivityUtil.getContent(obj);
+				if(content != null)
+					note.setText(Html.fromHtml(content));
 			} else if("image".equals(objectType)) {
 				String content = ActivityUtil.getContent(obj);
 				if(content != null)
@@ -129,8 +131,9 @@ public class ActivityUtil {
 			}
 			message = mContext.getString(R.string.msg_favorited,ActivityUtil.getActorBestName(actor),  what);
 			sender.setText(message);
-			note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
-			
+			String content = ActivityUtil.getContent(obj);
+			if(content != null)
+				note.setText(Html.fromHtml(content));
 		} else if ("share".equals(act.optString("verb"))) {
 			String message="";
 			String what = "";
@@ -150,7 +153,9 @@ public class ActivityUtil {
 				message = mContext.getString(R.string.msg_shareded,ActivityUtil.getActorBestName(actor), what);
 			}
 			sender.setText(message);
-			note.setText(Html.fromHtml(ActivityUtil.getContent(obj)));
+			String content = ActivityUtil.getContent(obj);
+			if(content != null)
+				note.setText(Html.fromHtml(content));
 		}
 
 		
@@ -184,9 +189,15 @@ public class ActivityUtil {
 		TextView cnt_shares = (TextView)view.findViewById(R.id.cnt_shares);
 		ll_counter.setVisibility(View.VISIBLE);
 
-		cnt_replies.setText(obj.optJSONObject("replies").optString("totalItems"));
-		cnt_likes.setText(obj.optJSONObject("likes").optString("totalItems"));
-		cnt_shares.setText(obj.optJSONObject("shares").optString("totalItems"));
+		JSONObject replies = obj.optJSONObject("replies");
+		if(replies != null)
+			cnt_replies.setText(replies.optString("totalItems"));
+		JSONObject likes = obj.optJSONObject("likes");
+		if(likes != null)
+			cnt_likes.setText(likes.optString("totalItems"));
+		JSONObject shares = obj.optJSONObject("shares");
+		if(shares != null)
+			cnt_shares.setText(shares.optString("totalItems"));
 	}
 	
 	public static LinearLayout getViewComment(Context context, LayoutInflater inflater, JSONObject item, boolean even) {
