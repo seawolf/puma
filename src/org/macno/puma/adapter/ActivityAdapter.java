@@ -14,20 +14,22 @@ import org.macno.puma.core.Account;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.util.ActivityUtil;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
-public class ActivityAdapter extends ArrayAdapter<JSONObject> {
+public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListView.OnScrollListener {
 
 	private String mFeed;
-	private Context mContext;
+	private FragmentActivity mContext;
 	private Account mAccount;
 	private StreamHandler mHandler = new StreamHandler(this);
 
@@ -37,7 +39,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 
 	private boolean mLoading = false;
 	
-	public ActivityAdapter(Context context, Account account, String feed) {
+	public ActivityAdapter(FragmentActivity context, Account account, String feed) {
 		super(context,0,new ArrayList<JSONObject>());
 		mContext = context;
 		mAccount = account;
@@ -74,6 +76,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 		if(mLoading) {
 			return;
 		}
+		mContext.setProgressBarIndeterminateVisibility(true);
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
@@ -100,6 +103,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 		if(mLoading) {
 			return;
 		}
+		mContext.setProgressBarIndeterminateVisibility(true);
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
@@ -111,17 +115,43 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 				JSONObject last = getItem(0);
 				Log.d(APP_NAME,"Asking for newer than "  + last.optString("id"));
 				JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
-				JSONArray items = stream.optJSONArray("items");
-				mItems = items;
-
+				mItems = stream.optJSONArray("items");
+				
 				mHandler.sendReloadedNewer();
 			}
 		};
 		new Thread(runnable).start();
 	}
 	
+	private void loadStreamsForOlder() {
+		if(mLoading) {
+			return;
+		}
+		Log.d(APP_NAME,"loadStreamsForOlder");
+		mContext.setProgressBarIndeterminateVisibility(true);
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				mLoading=true;
+				if(mPumpio == null) {
+					mPumpio = new Pumpio(mContext);
+					mPumpio.setAccount(mAccount);
+				}
+				JSONObject last = getItem(getCount()-1);
+				Log.d(APP_NAME,"Asking for older than "  + last.optString("id"));
+				JSONObject stream = mPumpio.fetchStream(mFeed, null, last.optString("id"), 20);
+				mItems = stream.optJSONArray("items");
+				
+				mHandler.sendReloadedOlder();
+			}
+		};
+		new Thread(runnable).start();
+	}
+	
 	private void reloadAdapter(boolean newer) {
+		
 		mLoading=false;
+		mContext.setProgressBarIndeterminateVisibility(false);
 		if(mItems != null) {
 			for(int i=0;i<mItems.length();i++) {
 				// Check if activity id is already here.. 
@@ -175,6 +205,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 	}
 	
 	private void notifyLoadStramFailed() {
+		mContext.setProgressBarIndeterminateVisibility(false);
 		Toast.makeText(mContext, R.string.load_stream_failed, Toast.LENGTH_LONG).show();
 	}
 	
@@ -184,7 +215,8 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
     	
     	private static final int MSG_POST_OK = 0;
     	private static final int MSG_RELOADED_NEWER = 1;
-    	private static final int MSG_LOAD_STREAM_FAILED = 2;
+    	private static final int MSG_RELOADED_OLDER = 2;
+    	private static final int MSG_LOAD_STREAM_FAILED = 3;
     	
     	StreamHandler(ActivityAdapter target) {
 			mTarget = new WeakReference<ActivityAdapter>(target);
@@ -197,6 +229,10 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
 			
 			case MSG_RELOADED_NEWER:
 				target.reloadAdapter(true);
+				break;
+				
+			case MSG_RELOADED_OLDER:
+				target.reloadAdapter(false);
 				break;
 				
 			case MSG_POST_OK:
@@ -217,9 +253,33 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> {
     		sendEmptyMessage(MSG_RELOADED_NEWER);
     	}
     	
+    	void sendReloadedOlder() {
+    		sendEmptyMessage(MSG_RELOADED_OLDER);
+    	}
+    	
     	void sendLoadStramFailed() {
     		sendEmptyMessage(MSG_LOAD_STREAM_FAILED);
     	}
     }
+
+	private int mFirstVisibleItem;
+
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		if (firstVisibleItem != mFirstVisibleItem) {
+			if (firstVisibleItem + visibleItemCount >= totalItemCount) {
+				loadStreamsForOlder();
+			}
+		} else {
+			mFirstVisibleItem = firstVisibleItem;
+		}
+	}
+
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		
+		
+	}
 	
 }

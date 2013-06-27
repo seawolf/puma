@@ -84,7 +84,7 @@ public class StreamPageAdapter extends PagerAdapter {
 		ActivityAdapter activityAdapter = new ActivityAdapter(mContext,mAccount,stream.id);
 		stream.adapter = activityAdapter;
 		ListView activityList = (ListView)layout.findViewById(R.id.activities_list);
-		
+		activityList.setOnScrollListener(activityAdapter);
 		activityList.setAdapter(activityAdapter);
 		
 		((ViewPager) collection).addView(layout);
