@@ -3,6 +3,7 @@ package org.macno.puma.util;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.macno.puma.R;
 
@@ -13,6 +14,8 @@ public class DateUtils {
 	public static String getRelativeDate(Context context, Date date) {
 
 		Date now = new Date();
+		
+		
 		// Seconds.
 		float diff = (now.getTime() - date.getTime()) / 1000;
 		if (diff < 60) {
@@ -46,12 +49,14 @@ public class DateUtils {
 		//if there is no time zone, we don't need to do any special parsing.
 		if(datestring.endsWith("Z")){
 			try{
-				SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",Locale.US);//spec for RFC3339					
+				SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'",Locale.US);//spec for RFC3339
+				s.setTimeZone(TimeZone.getTimeZone("UTC"));
 				d = s.parse(datestring);		  
 			}
 			catch(java.text.ParseException pe){//try again with optional decimals
 				SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",Locale.US);//spec for RFC3339 (with fractional seconds)
 				s.setLenient(true);
+				s.setTimeZone(TimeZone.getTimeZone("UTC"));
 				d = s.parse(datestring);		  
 			}
 			return d;
