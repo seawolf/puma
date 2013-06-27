@@ -134,7 +134,8 @@ public class AccountAddActivity extends Activity {
 				mNext.setEnabled(false);
 				mWebfingerID.setError(null);
 			} else if(e.length() > 0 ) {
-				if (e.toString().toLowerCase(Locale.ROOT).matches(EMAIL_PATTERN) ) {
+				
+				if (e.toString().toLowerCase(Locale.getDefault()).matches(EMAIL_PATTERN) ) {
 			    	mWebfingerID.setError(null);
 			    	if(!mNext.isEnabled()) {
 			    		mNext.setEnabled(true);
@@ -168,10 +169,6 @@ public class AccountAddActivity extends Activity {
 			public void run() {
 				
 				try {
-					
-//					// ONLY FOR TESTING PURPOSE!!!! 
-//					// REMOVE BEFORE PRODUCTION!!
-//					oauthManager.removeConsumerForHost(mHost);
 					
 					mOauthManager.prepareConsumerForHost(mHost);
 					
