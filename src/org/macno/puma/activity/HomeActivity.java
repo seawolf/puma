@@ -53,6 +53,12 @@ public class HomeActivity extends FragmentActivity {
     }
     
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+		outState.putString(EXTRA_ACCOUNT_UUID, mAccount.getUuid());
+		super.onSaveInstanceState(outState);
+	}
+    
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.home, menu);
