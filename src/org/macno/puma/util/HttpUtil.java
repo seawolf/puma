@@ -190,11 +190,11 @@ public class HttpUtil {
 		return mClient;
 	}
 
-	public JSONObject getJsonObject(String url) throws HttpUtilException {
+	public JSONObject getJsonObject(String url) throws HttpUtilException, SSLException {
 		return getJsonObject(url,GET);
 	}
 
-	public JSONObject getJsonObject(String url, String httpMethod) throws HttpUtilException {
+	public JSONObject getJsonObject(String url, String httpMethod) throws HttpUtilException, SSLException {
 		return getJsonObject(url,httpMethod,"");
 	}
 

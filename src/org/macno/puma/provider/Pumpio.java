@@ -2,6 +2,7 @@ package org.macno.puma.provider;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import javax.net.ssl.SSLException;
@@ -19,6 +20,7 @@ import org.macno.puma.manager.OAuthManager;
 import org.macno.puma.manager.SSLHostTrustManager;
 import org.macno.puma.util.HttpUtil;
 import org.macno.puma.util.HttpUtilException;
+import org.macno.puma.util.MD5Util;
 
 import android.content.Context;
 import android.location.Location;
@@ -35,6 +37,10 @@ public class Pumpio {
 	private static final String POST_MINOR_ACTIVITY_URL = "/api/user/%s/feed/minor";
 	
 	private static final String ACTIVITY_STREAM_URL = "/api/user/%1$s/%2$s";
+	private static final String ACTIVITY_REPLIES_URL = "/api/note/%1$s/replies";
+	private static final String ACTIVITY_FAVORITES_URL = "/api/note/%1$s/favorites";
+	private static final String ACTIVITY_SHARES_URL = "/api/note/%1$s/shares";
+	
 	
 	private boolean mDebug = true;
 	
@@ -109,6 +115,76 @@ public class Pumpio {
 				Log.d(APP_NAME,"["+url+"] " + nameValuePair.getName() + " = " + nameValuePair.getValue());
 			}
 			ret = mHttpUtil.getJsonObject(url, HttpUtil.GET, params);
+		} catch(SSLException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		} catch (HttpUtilException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		return ret;
+	}
+	
+	public JSONObject fetchReplies(String activity) {
+		JSONObject ret = null;
+		String url = null;
+		if(activity.startsWith("http://") || activity.startsWith("https://")) {
+			url = activity;
+		} else {
+			url = prepareUrl(String.format(ACTIVITY_REPLIES_URL, activity));
+		}
+		try {
+			ret = mHttpUtil.getJsonObject(url);
+		} catch(SSLException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		} catch (HttpUtilException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		return ret;
+	}
+	
+	public String getStremHash(String feed) {
+		String url = null;
+		if(feed.startsWith("http://") || feed.startsWith("https://")) {
+			url = feed;
+		} else {
+			url = prepareUrl(String.format(ACTIVITY_STREAM_URL, mAccount.getUsername(),feed));
+		}
+		String ret = null;
+		try{
+			ret = MD5Util.getMd5(url);
+		} catch(NoSuchAlgorithmException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		return ret;
+	}
+	
+	public JSONObject fetchShares(String activity) {
+		JSONObject ret = null;
+		String url = null;
+		if(activity.startsWith("http://") || activity.startsWith("https://")) {
+			url = activity;
+		} else {
+			url = prepareUrl(String.format(ACTIVITY_SHARES_URL, activity));
+		}
+		try {
+			ret = mHttpUtil.getJsonObject(url);
+		} catch(SSLException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		} catch (HttpUtilException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+		return ret;
+	}
+	
+	public JSONObject fetchFavorites(String activity) {
+		JSONObject ret = null;
+		String url = null;
+		if(activity.startsWith("http://") || activity.startsWith("https://")) {
+			url = activity;
+		} else {
+			url = prepareUrl(String.format(ACTIVITY_FAVORITES_URL, activity));
+		}
+		try {
+			ret = mHttpUtil.getJsonObject(url);
 		} catch(SSLException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		} catch (HttpUtilException e) {

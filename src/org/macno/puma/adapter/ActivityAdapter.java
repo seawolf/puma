@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.macno.puma.R;
 import org.macno.puma.activity.ViewActivity;
 import org.macno.puma.core.Account;
+import org.macno.puma.manager.ActivityManager;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.util.ActivityUtil;
 
@@ -29,6 +30,7 @@ import android.widget.Toast;
 public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListView.OnScrollListener {
 
 	private String mFeed;
+	private String mFeedHash;
 	private FragmentActivity mContext;
 	private Account mAccount;
 	private StreamHandler mHandler = new StreamHandler(this);
@@ -36,15 +38,24 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	private JSONArray mItems;
 	
 	private Pumpio mPumpio;
-
+	ActivityManager mActivityManager;
 	private boolean mLoading = false;
 	
 	public ActivityAdapter(FragmentActivity context, Account account, String feed) {
 		super(context,0,new ArrayList<JSONObject>());
 		mContext = context;
 		mAccount = account;
+		mPumpio = new Pumpio(mContext);
+		mPumpio.setAccount(mAccount);
 		mFeed = feed;
-		loadStreams();
+		mFeedHash = mPumpio.getStremHash(mFeed);
+		mActivityManager = new ActivityManager(mContext);
+		loadCache();
+		if(getCount()==0) {
+			loadStreams();
+		} else {
+			loadStreamsForNewer();
+		}
 	}
 	
 	@Override
@@ -63,7 +74,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 
 		return view;
 	}
-	
+		
 	private void openViewActivity(JSONObject act) {
 		ViewActivity.startActivity(mContext, mAccount, act);
 	}
@@ -72,19 +83,37 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		loadStreamsForNewer();
 	}
 	
+	private void loadCache() {
+		JSONObject o = mActivityManager.getStream(mFeedHash);
+		if(o == null) {
+			return;
+		}
+		JSONArray mItems = o.optJSONArray("items");
+		for(int i=0;i<mItems.length();i++) {
+			// Check if activity id is already here.. 
+			
+			try {
+				JSONObject act = mItems.getJSONObject(i);
+				if(act.has("object")) {
+					add(act);
+				}
+			} catch(JSONException e) {
+				Log.e(APP_NAME, e.getMessage(),e);
+			}
+		}
+	}
+	
 	private void loadStreams() {
 		if(mLoading) {
 			return;
 		}
+		loadCache();
 		mContext.setProgressBarIndeterminateVisibility(true);
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				mLoading=true;
-				if(mPumpio == null) {
-					mPumpio = new Pumpio(mContext);
-					mPumpio.setAccount(mAccount);
-				}
+				
 				JSONObject stream = mPumpio.fetchStream(mFeed, null, null, 20);
 				if(stream == null) {
 					mHandler.sendLoadStramFailed();
@@ -108,10 +137,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 			@Override
 			public void run() {
 				mLoading=true;
-				if(mPumpio == null) {
-					mPumpio = new Pumpio(mContext);
-					mPumpio.setAccount(mAccount);
-				}
+				
 				JSONObject last = getItem(0);
 				Log.d(APP_NAME,"Asking for newer than "  + last.optString("id"));
 				JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
@@ -133,10 +159,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 			@Override
 			public void run() {
 				mLoading=true;
-				if(mPumpio == null) {
-					mPumpio = new Pumpio(mContext);
-					mPumpio.setAccount(mAccount);
-				}
+				
 				JSONObject last = getItem(getCount()-1);
 				Log.d(APP_NAME,"Asking for older than "  + last.optString("id"));
 				JSONObject stream = mPumpio.fetchStream(mFeed, null, last.optString("id"), 20);
@@ -174,10 +197,25 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				}
 			}
 			mItems = null;
+			saveCache();
 		}
 		notifyDataSetChanged();
 	}
 	
+	private void saveCache() {
+		
+		JSONObject obj = new JSONObject();
+		JSONArray items = new JSONArray();
+		for (int i=0;i<getCount();i++) {
+			items.put(getItem(i));
+		}
+		try {
+			obj.put("items", items);
+			mActivityManager.saveStream(mFeedHash, obj);
+		} catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage(),e);
+		}
+	}
 
 	private boolean checkIfExists(String activityId) {
 		for(int i=getCount()-1;i>=0;i--) {
