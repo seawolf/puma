@@ -12,6 +12,12 @@
     <string name="action_add_account">Agregar cuenta</string>
     <string name="action_post">Publicar</string>
     
+<string name="who_like">A %s les gusta esto.</string>
+    <string name="who_like_and_more">A %1$s y %2$s más les gusta esto.</string>
+    <string name="who_likes">A %s le gusta esto.</string>
+    
+    <string name="load_stream_failed">Error al cargar los mensajes</string>
+
     <string name="welcome">¡Bienvenido!</string>
     <string name="welcome_user">¡Bienvenido %s!</string>
     <string name="insert_webfinger_id">Webfinger ID</string>
@@ -19,7 +25,7 @@
 	<string name="webfinger_sample">username@example.com</string>
 	<string name="webfinger_not_valid">No válido</string>
 	<string name="btn_next">Siguiente</string>
-	<string name="auth_progress_msg">Por favor espera, autenticándose</string>
+	<string name="auth_progress_msg">Por favor, espera, autenticación en progreso</string>
 	<string name="post_complete">Nota publicada</string>
 	<string name="title">Título</string>
 	<string name="title_hint_optional">Título (opcional)</string>
@@ -32,8 +38,11 @@
 	<string name="public_post">Nota pública</string>
 	<string name="send_location">Adjuntar localización</string>
 	<string name="confirm_logout">¿Estás seguro?</string>
+	<string name="trust_and_proceed">Confiar y seguir adelante</string>
 	<string name="warning">Advertencia</string>
     <string name="error">Error</string>
+    <string name="ssl_error">Error de SSL</string>
+
 	<string name="error_generic">Lo siento, algo fue mal...</string>
 	<string name="error_generic_detail">Lo siento, algo fue mal...\n%s</string>
 	
@@ -50,9 +59,13 @@
 	<string name="objecttype_note">una nota</string>
 	<string name="note_shared">Nota compartida</string>
 	
+	<string name="msg_replies">Respuestas</string>
+	<string name="msg_likes">Le gusta a</string>
+	<string name="msg_shares">Lo han compartido</string>
+
 	<!-- Dates -->
 	<string name="few_seconds">hace unos segundos</string>
-	<string name="one_minute_ago">"hace un minoto"</string>
+	<string name="one_minute_ago">"hace un minuto"</string>
 	<string name="minutes_ago">"hace unos %1$s minutos"</string>
 	<string name="one_hour_ago">"hace una hora"</string>
 	<string name="hours_ago">"hace unas %1$s horas"</string>
