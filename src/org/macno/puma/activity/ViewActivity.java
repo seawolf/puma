@@ -1,6 +1,10 @@
 package org.macno.puma.activity;
 
+import static org.macno.puma.PumaApplication.APP_NAME;
+
 import java.lang.ref.WeakReference;
+
+import javax.net.ssl.SSLException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,9 +21,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,9 +41,22 @@ public class ViewActivity extends Activity {
 	
 	private PostHandler mHandler = new PostHandler(this);
 	
+	private boolean mLoading = false;
+	
+	private JSONArray mComments;
+	
+	private LinearLayout ll_comments;
+	
+	private Pumpio mPumpio;
+	
+	private TextView mLoadingComments;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setProgressBarIndeterminate(true);
+        setProgressBarIndeterminateVisibility(false);
         mContext = this;
         setContentView(R.layout.activity_view);
         Bundle extras = getIntent().getExtras();
@@ -59,6 +78,8 @@ public class ViewActivity extends Activity {
 			finish();
 		}
 
+		mPumpio = new Pumpio(mContext);
+		mPumpio.setAccount(mAccount);
         try {
         	mActivity = new JSONObject(activity);
         } catch(JSONException e) {
@@ -70,7 +91,8 @@ public class ViewActivity extends Activity {
 
         addLikes(ll_parent);
         
-        addComments(ll_parent);
+        ll_comments = (LinearLayout)findViewById(R.id.ll_activity_replies);
+        addComments(ll_comments);
 	}
 	
 	@Override
@@ -92,6 +114,18 @@ public class ViewActivity extends Activity {
 			
 			JSONArray items = replies.optJSONArray("items");
 			if(items != null) {
+				int totalItems = replies.optInt("totalItems", 0);
+				if(totalItems > items.length()) {
+					
+					JSONObject pumpIo = replies.optJSONObject("pump_io");
+					if(pumpIo != null && pumpIo.has("proxyURL")) {
+						// If there's a proxy I use it
+						loadComments(pumpIo.optString("proxyURL"));
+					} else {
+						loadComments(replies.optString("url"));
+					}
+					addLoadingCommentsText(ll_parent);
+				}
 				for(int i=items.length()-1;i>=0;i--) {
 					LinearLayout view = ActivityUtil.getViewComment(mContext, inflater, items.optJSONObject(i), (i % 2 == 0));
 					if(view != null) {
@@ -100,6 +134,65 @@ public class ViewActivity extends Activity {
 				}
 			}
 		}
+	}
+	
+	private void addLoadingCommentsText(LinearLayout ll_parent) {
+		mLoadingComments = new TextView(mContext);
+		mLoadingComments.setText(R.string.loading_comments_1);
+		ll_parent.addView(mLoadingComments,LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				int[] loading = {
+						R.string.loading_comments_1, 
+						R.string.loading_comments_2, 
+						R.string.loading_comments_3,
+						R.string.loading_comments_4
+					};
+				int c=0;
+				while(mLoadingComments != null) {
+					mHandler.changeLoadingComment(loading[c]);
+					c++;
+					if(c >= loading.length) {
+						c=0;
+					}
+					try {
+						Thread.sleep(400);
+					} catch (InterruptedException e) {
+						Log.e(APP_NAME,e.getMessage(),e);
+						return;
+					}
+				}
+			}
+		};
+		new Thread(runnable).start();
+	}
+		
+	private void loadComments(final String feed) {
+		if(mLoading) {
+			return;
+		}
+		setProgressBarIndeterminateVisibility(true);
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				mLoading=true;
+				try {
+					JSONObject stream = mPumpio.fetchStream(feed, null, null, 100);
+					if(stream == null) {
+						mHandler.sendLoadCommentsFailed();
+						return;
+					}
+					JSONArray items = stream.optJSONArray("items");
+					mComments = items;
+
+					mHandler.sendReloadComments();
+				} catch(SSLException e) {
+					mHandler.sendLoadCommentsFailed();
+				}
+			}
+		};
+		new Thread(runnable).start();
 	}
 	
 	private void addLikes(LinearLayout ll_parent ) {
@@ -177,15 +270,52 @@ public class ViewActivity extends Activity {
 		finish();
 	}
 	
+	private void reloadComments() {
+		setProgressBarIndeterminateVisibility(false);
+		
+		if(mComments == null) {
+			return;
+		}
+		ll_comments.removeAllViews();
+		if(mLoadingComments != null) {
+			mLoadingComments = null;
+		}
+		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		
+		for(int i=mComments.length()-1;i>=0;i--) {
+			LinearLayout view = ActivityUtil.getViewComment(mContext, inflater, mComments.optJSONObject(i), (i % 2 == 0));
+			if(view != null) {
+				ll_comments.addView(view);
+			}
+		}
+	}
+	
 	private void onSharedNote() {
 		Toast.makeText(mContext, getString(R.string.note_shared), Toast.LENGTH_SHORT).show();
 	}
 	
+	private void notifyLoadCommentsFailed() {
+		setProgressBarIndeterminateVisibility(false);
+		if(mLoadingComments != null) {
+			mLoadingComments = null;
+		}
+		Toast.makeText(mContext, R.string.load_comments_failed, Toast.LENGTH_LONG).show();
+	}
+	
+	private void changeLoadingComment(int string) {
+		if(mLoadingComments != null) {
+			mLoadingComments.setText(string);
+		}
+	}
+	
 	private static class PostHandler extends Handler {
     	
-    	private final WeakReference<ViewActivity> mTarget;
+		private final WeakReference<ViewActivity> mTarget;
     	
     	private static final int MSG_SHARE_OK = 0;
+    	private static final int MSG_RELOADED_NEWER = 1;
+    	private static final int MSG_LOAD_COMMENTS_FAILED = 2;
+    	private static final int MSG_CHANGE_COMMENT = 3;
     	
     	PostHandler(ViewActivity target) {
 			mTarget = new WeakReference<ViewActivity>(target);
@@ -193,17 +323,46 @@ public class ViewActivity extends Activity {
     	
     	public void handleMessage(Message msg) {
     		ViewActivity target = mTarget.get();
-			
+    		
 			switch (msg.what) {
 			
 			case MSG_SHARE_OK:
 				target.onSharedNote();
 				break;
+				
+			case MSG_RELOADED_NEWER:
+				target.reloadComments();
+				break;
+				
+			case MSG_LOAD_COMMENTS_FAILED:
+				target.notifyLoadCommentsFailed();
+				break;
+				
+	    	case MSG_CHANGE_COMMENT:
+	    		target.changeLoadingComment(msg.arg1);
+	    		break;
 			}
+			
+
 		}
     	
     	void sendShareComplete() {
     		sendEmptyMessage(MSG_SHARE_OK);
+    	}
+    	
+    	void sendReloadComments() {
+    		sendEmptyMessage(MSG_RELOADED_NEWER);
+    	}
+    	
+    	void sendLoadCommentsFailed() {
+    		sendEmptyMessage(MSG_LOAD_COMMENTS_FAILED);
+    	}
+    	    	
+    	void changeLoadingComment(int string) {
+    		Message msg = new Message();
+			msg.what=MSG_CHANGE_COMMENT;
+			msg.arg1=string;
+			sendMessage(msg);
     	}
     }
 	
