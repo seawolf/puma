@@ -32,6 +32,19 @@ public class ActivityManager {
 		return saveCache(stream,activity);
 	}
 	
+	public boolean deleteStream(String stream) {
+		return deleteCache(stream);
+	}
+
+	private boolean deleteCache(String fileName) {
+		File cacheDir = mContext.getDir("data",Context.MODE_PRIVATE);
+		File cacheFile = new File(cacheDir, fileName);
+		if(cacheFile.exists()) {
+			return cacheFile.delete();
+		}
+		return false;
+	}
+
 	private JSONObject loadCache(String fileName) { // TODO verificare se non sia meglio caricare sempre, anche quelli "vecchi"
 		File cacheDir = mContext.getDir("data",Context.MODE_PRIVATE);
 		File cacheFile = new File(cacheDir, fileName);
@@ -71,9 +84,8 @@ public class ActivityManager {
 		}
 		return null;
 	}
-	
+
 	private boolean saveCache(String fileName, JSONObject data) {
-		Log.d(APP_NAME, "Saving cache for " + fileName);
 		File cacheDir = mContext.getDir("data",Context.MODE_PRIVATE);
 		File cacheFile = new File(cacheDir, fileName);
 		if(cacheFile.exists()) {

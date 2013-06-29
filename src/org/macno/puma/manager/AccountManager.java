@@ -43,7 +43,7 @@ public class AccountManager {
 		}
 		return account;
 	}
-	
+
 	public Account getAccount(String uuid) {
 		String json = mSettings.getString(uuid, null);
 		if (json == null) {

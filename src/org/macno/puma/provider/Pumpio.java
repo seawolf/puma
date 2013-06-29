@@ -95,11 +95,23 @@ public class Pumpio {
 		return null;
 	}
 	
-	public JSONObject fetchStream(String feed, String since, String before, int count) {
+	public JSONObject fetchStream(String feed, String since, String before, int count) throws SSLException {
 		JSONObject ret = null;
 		String url = null;
 		if(feed.startsWith("http://") || feed.startsWith("https://")) {
 			url = feed;
+			// I have to check if feed host is != from account host.. 
+			// So I can eventually add the ssl exception
+//			try {
+//				URL uUrl = new URL(url);
+//				String host = uUrl.getHost();
+//				if(!host.equals(mAccount.getNode())) {
+//					mHttpUtil.setHost(mAccount.getNode(),mSSLHostManager.hasHost(uUrl.getHost()));
+//				}
+//			} catch(MalformedURLException e) {
+//				Log.e(APP_NAME, "Invalid url! " + url );
+//				return null;
+//			}
 		} else {
 			url = prepareUrl(String.format(ACTIVITY_STREAM_URL, mAccount.getUsername(),feed));
 		}
@@ -117,6 +129,7 @@ public class Pumpio {
 			ret = mHttpUtil.getJsonObject(url, HttpUtil.GET, params);
 		} catch(SSLException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
+			throw e;
 		} catch (HttpUtilException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}

@@ -10,13 +10,15 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 public class PumaApplication extends Application {
-	
+
 	public static final String APP_NAME = "Puma";
 	
 	public static final String K_SSLHOSTS_SETTINGS = "SSLHostsSettings";
 	public static final String K_ACCOUNT_SETTINGS = "AccountsSettings";
 	public static final String K_OAUTH_SETTINGS = "OAuthSettings";
 	public static final String K_PUMA_SETTINGS = "PumaSettings";
+
+	public static final int K_MAX_CACHED_ITEMS = 100;
 
 	private static final String K_VERSION = "pumaVersion";
 	
@@ -52,4 +54,5 @@ public class PumaApplication extends Application {
 			mSettings.edit().putInt(K_VERSION, currentVersion).commit();
 		}
 	}
+
 }

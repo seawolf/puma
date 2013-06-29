@@ -13,6 +13,12 @@
         android:icon="@drawable/new_notice"
 	/>
     
+     <item
+        android:id="@+id/action_clear_cache"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_clear_cache"/>
+     
     <item
         android:id="@+id/action_add_account"
         android:orderInCategory="100"
@@ -25,11 +31,13 @@
         android:showAsAction="never"
         android:title="@string/action_logout"/>
     
+    <!-- 
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_settings"/>
+	 -->
 
     
 </menu>

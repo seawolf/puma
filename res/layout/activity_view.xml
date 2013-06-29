@@ -4,12 +4,24 @@
     android:layout_height="wrap_content" >
 
     <LinearLayout
-        android:id="@+id/ll_activity_parent"
+        android:id="@+id/ll_activity_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        
+        <LinearLayout
+            android:id="@+id/ll_activity_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_activity_replies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+        </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

@@ -70,7 +70,6 @@ public class ActivityUtil {
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		TextView note = (TextView)view.findViewById(R.id.note);
 		
-		
 		if("post".equals(act.optString("verb"))) {
 			String message="";
 			String what = "";
@@ -235,12 +234,12 @@ public class ActivityUtil {
 		TextView published = (TextView)view.findViewById(R.id.tv_published);
 		String s_published = item.optString("published");
 		if(s_published != null) {
-			Log.d(APP_NAME,"published <<< " + s_published);
+//			Log.d(APP_NAME,"published <<< " + s_published);
 			try {
 				s_published = DateUtils.getRelativeDate(context, 
 						DateUtils.parseRFC3339Date(s_published)
 						);
-				Log.d(APP_NAME,"published >>> " + s_published);
+//				Log.d(APP_NAME,"published >>> " + s_published);
 				published.setText(s_published);
 			} catch (ParseException e) {
 				Log.e(APP_NAME,e.getMessage(),e);

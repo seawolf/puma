@@ -1,9 +1,12 @@
 package org.macno.puma.adapter;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
+import static org.macno.puma.PumaApplication.K_MAX_CACHED_ITEMS;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+
+import javax.net.ssl.SSLException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,17 +86,23 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		loadStreamsForNewer();
 	}
 	
+	public void clearCache() {
+		mActivityManager.deleteStream(mFeedHash);
+		clear();
+		notifyDataSetChanged();
+		loadStreams();
+	}
+	
 	private void loadCache() {
 		JSONObject o = mActivityManager.getStream(mFeedHash);
 		if(o == null) {
 			return;
 		}
-		JSONArray mItems = o.optJSONArray("items");
-		for(int i=0;i<mItems.length();i++) {
-			// Check if activity id is already here.. 
+		JSONArray items = o.optJSONArray("items");
+		for(int i=0;i<items.length();i++) {
 			
 			try {
-				JSONObject act = mItems.getJSONObject(i);
+				JSONObject act = items.getJSONObject(i);
 				if(act.has("object")) {
 					add(act);
 				}
@@ -101,6 +110,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				Log.e(APP_NAME, e.getMessage(),e);
 			}
 		}
+		Log.d(APP_NAME,"Loaded cache " + mFeedHash + " : " + items.length() + " items ");
 	}
 	
 	private void loadStreams() {
@@ -113,16 +123,19 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 			@Override
 			public void run() {
 				mLoading=true;
-				
-				JSONObject stream = mPumpio.fetchStream(mFeed, null, null, 20);
-				if(stream == null) {
-					mHandler.sendLoadStramFailed();
-					return;
-				}
-				JSONArray items = stream.optJSONArray("items");
-				mItems = items;
+				try {
+					JSONObject stream = mPumpio.fetchStream(mFeed, null, null, 20);
+					if(stream == null) {
+						mHandler.sendLoadStramFailed();
+						return;
+					}
+					JSONArray items = stream.optJSONArray("items");
+					mItems = items;
 
-				mHandler.sendLoadComplete();
+					mHandler.sendLoadComplete();
+				} catch(SSLException e) {
+					//
+				}
 			}
 		};
 		new Thread(runnable).start();
@@ -140,10 +153,14 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				
 				JSONObject last = getItem(0);
 				Log.d(APP_NAME,"Asking for newer than "  + last.optString("id"));
-				JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
-				mItems = stream.optJSONArray("items");
-				
-				mHandler.sendReloadedNewer();
+				try {
+					JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
+					mItems = stream.optJSONArray("items");
+
+					mHandler.sendReloadedNewer();
+				} catch(SSLException e) {
+					//
+				}
 			}
 		};
 		new Thread(runnable).start();
@@ -162,10 +179,14 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				
 				JSONObject last = getItem(getCount()-1);
 				Log.d(APP_NAME,"Asking for older than "  + last.optString("id"));
-				JSONObject stream = mPumpio.fetchStream(mFeed, null, last.optString("id"), 20);
-				mItems = stream.optJSONArray("items");
-				
-				mHandler.sendReloadedOlder();
+				try {
+					JSONObject stream = mPumpio.fetchStream(mFeed, null, last.optString("id"), 20);
+					mItems = stream.optJSONArray("items");
+
+					mHandler.sendReloadedOlder();
+				} catch(SSLException e) {
+					//
+				}
 			}
 		};
 		new Thread(runnable).start();
@@ -185,10 +206,12 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 						String activityId = act.getString("id");
 						if(newer) {
 							checkAndDeleteIfExists(activityId);
-							add(act);
+							insert(act, 0);
+							Log.d(APP_NAME,"Inserting " + activityId + " in position " + 0);
 						} else {
 							if(!checkIfExists(activityId)) { // I'm moving backward. If act exists, it's newer.. 
 								add(act);
+								Log.d(APP_NAME,"Appengin " + activityId + " at the end of the list");
 							}
 						}
 					}
@@ -207,9 +230,13 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		JSONObject obj = new JSONObject();
 		JSONArray items = new JSONArray();
 		for (int i=0;i<getCount();i++) {
+			if(i > K_MAX_CACHED_ITEMS) {
+				break;
+			}
 			items.put(getItem(i));
 		}
 		try {
+			Log.d(APP_NAME,"Saving cache " + mFeedHash + " : " + items.length() + " items ");
 			obj.put("items", items);
 			mActivityManager.saveStream(mFeedHash, obj);
 		} catch(JSONException e) {

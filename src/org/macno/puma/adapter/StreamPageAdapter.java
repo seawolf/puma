@@ -97,6 +97,11 @@ public class StreamPageAdapter extends PagerAdapter {
 		stream.adapter.checkNewActivities();
 	}
 	
+	public void clearCache(int viewid) {
+		Stream stream = mStreamNames.get(viewid);
+		stream.adapter.clearCache();
+	}
+
 	class Stream {
 		
 		String id;

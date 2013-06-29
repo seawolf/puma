@@ -11,12 +11,19 @@
     <string name="action_compose">Compose</string>
     <string name="action_add_account">Add account</string>
     <string name="action_post">Publish</string>
+    <string name="action_clear_cache">Clear cache</string>
     
     <string name="who_like">%s like this.</string>
     <string name="who_like_and_more">%1$s and %2$s more like this.</string>
     <string name="who_likes">%s likes this.</string>
     
+    <string name="loading_comments_1">Loading comments |</string>
+    <string name="loading_comments_2">Loading comments /</string>
+    <string name="loading_comments_3">Loading comments &#8212;</string>
+    <string name="loading_comments_4">Loading comments \</string>
+    
     <string name="load_stream_failed">Failed to load the feed</string>
+    <string name="load_comments_failed">Failed to load comments</string>
     
     <string name="welcome">Welcome!</string>
     <string name="welcome_user">Welcome %s!</string>
