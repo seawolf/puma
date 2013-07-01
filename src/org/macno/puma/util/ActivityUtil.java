@@ -53,7 +53,7 @@ public class ActivityUtil {
 	
 	public static String getObjectImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("image");
-		return imgo != null ? imgo.optString("url") : null;
+		return imgo != null ? imgo.optString("url",null) : null;
 	}
 	
 	public static LinearLayout getViewActivity(Context mContext,JSONObject act) {
@@ -117,6 +117,8 @@ public class ActivityUtil {
 				if(showCounterBar) {
 					ActivityUtil.showCounterBar(view, obj);
 				}
+			} else {
+				
 			}
 			message = mContext.getString(R.string.msg_posted,ActivityUtil.getActorBestName(actor), what);
 			sender.setText(message);
@@ -161,9 +163,29 @@ public class ActivityUtil {
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
+		} else if ("follow".equals(act.optString("verb"))) {
+			String message="";
+			
+			JSONObject originalActor = ActivityUtil.getActor(obj);
+			if(originalActor != null) {
+				message = mContext.getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+			} else {
+				message = mContext.getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), "you");
+			}
+			sender.setText(message);
+			String content = ActivityUtil.getContent(obj);
+			if(content != null)
+				note.setText(Html.fromHtml(content));
+		} else {
+			String what = act.optString("verb");
+
+			sender.setText(ActivityUtil.getActorBestName(actor) + " " + what);
+			String content = ActivityUtil.getContent(obj);
+			if(content != null)
+				note.setText(Html.fromHtml(content));
 		}
 
-		
+
 		RemoteImageView rim = (RemoteImageView)view.findViewById(R.id.riv_sender);
 		String avatar = ActivityUtil.getImageUrl(actor);
 		if(avatar == null) {
