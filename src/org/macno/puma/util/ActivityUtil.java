@@ -52,7 +52,8 @@ public class ActivityUtil {
 	}
 	
 	public static String getObjectImage(JSONObject obj) {
-		return obj.optJSONObject("image").optString("url");
+		JSONObject imgo = obj.optJSONObject("image");
+		return imgo != null ? imgo.optString("url") : null;
 	}
 	
 	public static LinearLayout getViewActivity(Context mContext,JSONObject act) {
@@ -105,8 +106,13 @@ public class ActivityUtil {
 					note.setText(Html.fromHtml(content));
 				RemoteImageView noteImage = (RemoteImageView)view.findViewById(R.id.note_image);
 				noteImage.setVisibility(View.VISIBLE);
-				noteImage.setRemoteURI(ActivityUtil.getObjectImage(obj));
-				noteImage.loadImage();
+				String imageURL = ActivityUtil.getObjectImage(obj);
+				if(imageURL != null) {
+					noteImage.setRemoteURI(imageURL);
+					noteImage.loadImage();
+				} else {
+					Log.e(APP_NAME,"Uhm an image activity without the image object");
+				}
 				
 				if(showCounterBar) {
 					ActivityUtil.showCounterBar(view, obj);
