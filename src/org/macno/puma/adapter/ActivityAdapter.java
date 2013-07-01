@@ -39,6 +39,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	private StreamHandler mHandler = new StreamHandler(this);
 
 	private JSONArray mItems;
+	private boolean mHasPrevious;
 	
 	private Pumpio mPumpio;
 	ActivityManager mActivityManager;
@@ -157,6 +158,9 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 					JSONObject stream = mPumpio.fetchStream(mFeed, last.optString("id"), null, 20);
 					mItems = stream.optJSONArray("items");
 
+					if (stream.optString("prev",null) != null) {
+						mHasPrevious = true;
+					}
 					mHandler.sendReloadedNewer();
 				} catch(SSLException e) {
 					//
@@ -206,18 +210,22 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 						String activityId = act.getString("id");
 						if(newer) {
 							checkAndDeleteIfExists(activityId);
-							insert(act, 0);
-							Log.d(APP_NAME,"Inserting " + activityId + " in position " + 0);
+							insert(act, i);
+//							Log.d(APP_NAME,"Inserting " + activityId + " in position " + 0);
 						} else {
 							if(!checkIfExists(activityId)) { // I'm moving backward. If act exists, it's newer.. 
 								add(act);
-								Log.d(APP_NAME,"Appengin " + activityId + " at the end of the list");
+//								Log.d(APP_NAME,"Appengin " + activityId + " at the end of the list");
 							}
 						}
 					}
 				} catch(JSONException e) {
 					Log.e(APP_NAME, e.getMessage(),e);
 				}
+			}
+			if(mHasPrevious) {
+				loadStreamsForNewer();
+				mHasPrevious = false;
 			}
 			mItems = null;
 			saveCache();
