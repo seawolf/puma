@@ -177,6 +177,19 @@ public class ActivityUtil {
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
+		} else if ("stop-following".equals(act.optString("verb"))) {
+				String message="";
+				
+				JSONObject originalActor = ActivityUtil.getActor(obj);
+				if(originalActor != null) {
+					message = mContext.getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+				} else {
+					message = mContext.getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), "you");
+				}
+				sender.setText(message);
+				String content = ActivityUtil.getContent(obj);
+				if(content != null)
+					note.setText(Html.fromHtml(content));
 		} else {
 			String what = act.optString("verb");
 

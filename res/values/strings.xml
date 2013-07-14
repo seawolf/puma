@@ -61,6 +61,7 @@
 	<string name="msg_shareded">%1$s shared %2$s</string>
 	<string name="msg_shareded_from">%1$s shared %2$s from %3$s</string>
 	<string name="msg_followed">%1$s started following %2$s</string>
+	<string name="msg_stop_following">%1$s stopped following %2$s</string>
 	<string name="msg_favorited_inreplyto">%1$s favorited %2$s in reply to %3$s</string>
 	<string name="objecttype_comment">a comment</string>
 	<string name="objecttype_image">an image</string>
