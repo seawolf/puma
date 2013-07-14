@@ -11,12 +11,19 @@
     <string name="action_compose">Redactar</string>
     <string name="action_add_account">Agregar cuenta</string>
     <string name="action_post">Publicar</string>
+    <string name="action_clear_cache">Limpiar caché</string>
     
-<string name="who_like">A %s les gusta esto.</string>
-    <string name="who_like_and_more">A %1$s y %2$s más les gusta esto.</string>
+<string name="who_like">A %s les gusta.</string>
+    <string name="who_like_and_more">A %1$s y %2$s más les gusta.</string>
     <string name="who_likes">A %s le gusta esto.</string>
-    
+
+  <string name="loading_comments_1">Cargando comentarios |</string>
+    <string name="loading_comments_2">Cargando comentarios /</string>
+    <string name="loading_comments_3">Cargando comentarios &#8212;</string>
+    <string name="loading_comments_4">Cargando comentarios \</string>
+        
     <string name="load_stream_failed">Error al cargar los mensajes</string>
+    <string name="load_comments_failed">Error al cargar los comentarios</string>
 
     <string name="welcome">¡Bienvenido!</string>
     <string name="welcome_user">¡Bienvenido %s!</string>
@@ -53,6 +60,10 @@
 	<string name="msg_favorited">%1$s marcó como favorito %2$s</string>
 	<string name="msg_shareded">%1$s compartió %2$s</string>
 	<string name="msg_shareded_from">%1$s compartió %2$s desde %3$s</string>
+
+<string name="msg_followed">%1$s empezó a seguir a %2$s</string>
+	<string name="msg_stop_following">%1$s dejó de seguir a %2$s</string>
+
 	<string name="msg_favorited_inreplyto">%1$s marcó como favorito %2$s en respuesta a %3$s</string>
 	<string name="objecttype_comment">un comentario</string>
 	<string name="objecttype_image">una imagen</string>
@@ -60,7 +71,7 @@
 	<string name="note_shared">Nota compartida</string>
 	
 	<string name="msg_replies">Respuestas</string>
-	<string name="msg_likes">Le gusta a</string>
+	<string name="msg_likes">\'Me gusta\'</string>
 	<string name="msg_shares">Lo han compartido</string>
 
 	<!-- Dates -->
