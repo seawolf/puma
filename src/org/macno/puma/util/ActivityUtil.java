@@ -10,6 +10,7 @@ import org.macno.puma.view.RemoteImageView;
 
 import android.content.Context;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,10 +58,10 @@ public class ActivityUtil {
 	}
 	
 	public static LinearLayout getViewActivity(Context mContext,JSONObject act) {
-		return ActivityUtil.getViewActivity(mContext, act, true);
+		return ActivityUtil.getViewActivity(mContext, act, true, false);
 	}
 	
-	public static LinearLayout getViewActivity(Context mContext,JSONObject act, boolean showCounterBar) {
+	public static LinearLayout getViewActivity(Context mContext,JSONObject act, boolean showCounterBar, boolean clickableLink) {
 		
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.activity_row, null);
@@ -185,7 +186,9 @@ public class ActivityUtil {
 				note.setText(Html.fromHtml(content));
 		}
 
-
+		if(clickableLink) {
+			note.setMovementMethod(LinkMovementMethod.getInstance());
+		}
 		RemoteImageView rim = (RemoteImageView)view.findViewById(R.id.riv_sender);
 		String avatar = ActivityUtil.getImageUrl(actor);
 		if(avatar == null) {
@@ -208,6 +211,7 @@ public class ActivityUtil {
 		return view;
 		
 	}
+	
 	
 	public static void showCounterBar(LinearLayout view, JSONObject obj) {
 		LinearLayout ll_counter = (LinearLayout)view.findViewById(R.id.ll_counter);

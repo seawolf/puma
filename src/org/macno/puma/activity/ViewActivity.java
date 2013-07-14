@@ -87,7 +87,7 @@ public class ViewActivity extends Activity {
         }
         
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
-        ll_parent.addView(ActivityUtil.getViewActivity(mContext, mActivity,false));
+        ll_parent.addView(ActivityUtil.getViewActivity(mContext, mActivity,false, true));
 
         addLikes(ll_parent);
         
