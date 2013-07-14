@@ -35,19 +35,19 @@ public class StreamPageAdapter extends PagerAdapter {
 		mStreamNames = new ArrayList<StreamPageAdapter.Stream>();
 		Stream inbox = new Stream();
 		inbox.id="inbox/major";
-		inbox.name="Inbox Major";
+		inbox.name="Inbox";
 		mStreamNames.add(inbox);
+
+		Stream direct = new Stream();
+		direct.id="inbox/direct";
+		direct.name="Messages";
+		mStreamNames.add(direct);
 
 		Stream feed = new Stream();
 		feed.id="feed/major";
-		feed.name="Feed";
+		feed.name="Activity";
 		mStreamNames.add(feed);
 		
-		Stream direct = new Stream();
-		direct.id="inbox/direct";
-		direct.name="Inbox Direct";
-		mStreamNames.add(direct);
-
 		Stream publicFeed = new Stream();
 		publicFeed.id="https://ofirehose.com/feed.json";
 		publicFeed.name="OFirehose.com feed";
