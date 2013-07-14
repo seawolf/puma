@@ -102,6 +102,10 @@ public class AccountManager {
 	 * @return
 	 */
 	public boolean delete(Account account) {
+		String accountUUID = mSettings.getString(K_DEFAULT_ACCOUNT, null);
+		if (accountUUID != null && account.getUuid().equals(accountUUID)) {
+			resetDefault();
+		}
 		return mSettings.edit().remove(account.getUuid()).commit();
 	}
 	
@@ -112,5 +116,9 @@ public class AccountManager {
 	 */
 	public void setDefault(Account account) {
 		mSettings.edit().putString(K_DEFAULT_ACCOUNT,account.getUuid()).commit();
+	}
+	
+	public void resetDefault() {
+		mSettings.edit().remove(K_DEFAULT_ACCOUNT).commit();
 	}
 }
