@@ -24,6 +24,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +47,8 @@ public class AccountAddActivity extends Activity {
 	private static final String EMAIL_PATTERN = 
 			"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+	
+	private static final String K_OAUTH_CALLBACK_HOST = "puma.macno.org";
 	
 	private EditText mWebfingerID;
 	private Button mNext;
@@ -169,6 +172,9 @@ public class AccountAddActivity extends Activity {
 			public void run() {
 				
 				try {
+				
+					mOAuthView.clearView();
+			    	mOAuthView.invalidate();
 					
 					mOauthManager.prepareConsumerForHost(mHost);
 					
@@ -185,7 +191,7 @@ public class AccountAddActivity extends Activity {
 				mOauthManager.prepareProviderForHost(mHost);
 
 				try {
-					String url = mOauthManager.retrieveRequestToken("https://puma.macno.org/fake/oauth_callback");
+					String url = mOauthManager.retrieveRequestToken("https://"+K_OAUTH_CALLBACK_HOST+"/fake/oauth_callback");
 										
 					mHandler.openOAuthWebPage(url);
 				} catch(OAuthException e) {
@@ -303,20 +309,43 @@ public class AccountAddActivity extends Activity {
 	}
 	
 	private class OAuthWebListener extends WebViewClient {
+
+		private boolean mInterrupting = false;
 		
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			
+
+			Log.d(APP_NAME,"shouldOverrideUrlLoading() " + url );
+			if(mInterrupting) {
+				return true;
+			}
+			return intercept(url);
+
+		}
+
+		@Override  
+		public void onPageStarted(WebView view, String url, Bitmap favicon) {  
+			Log.d(APP_NAME,"onPageStarted() " + url );
+			if(mInterrupting) {
+				return;
+			}
+			if(intercept(url)) {
+				mInterrupting = true;
+				view.stopLoading();
+			}
+		}
+
+		private boolean intercept(String url) {
 			Uri uri = Uri.parse(url);
-			
-			if(uri.getHost().equals("puma.macno.org")) {
+			if(uri.getHost().equals(K_OAUTH_CALLBACK_HOST)) {
 				// Close OAUTH WebView
-				Log.d(APP_NAME,"Intercepted puma.macno.org URL loading");
+				Log.d(APP_NAME,"Intercepted " + K_OAUTH_CALLBACK_HOST + " URL loading");
 				parseOAuthCallback(uri);
+				
 				return true;
 			} else return false;
-		
-		 }	
+
+		}
 	}
 	
 	private void parseOAuthCallback(final Uri uri) {
