@@ -5,6 +5,7 @@ import static org.macno.puma.PumaApplication.K_MAX_CACHED_ITEMS;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.net.ssl.SSLException;
 
@@ -17,6 +18,7 @@ import org.macno.puma.core.Account;
 import org.macno.puma.manager.ActivityManager;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.util.ActivityUtil;
+import org.macno.puma.util.DateUtils;
 
 import android.os.Handler;
 import android.os.Message;
@@ -58,7 +60,21 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		if(getCount()==0) {
 			loadStreams();
 		} else {
-			loadStreamsForNewer();
+			JSONObject last = getItem(0);
+			String s_published = ActivityUtil.getPublished(last);
+			try {
+				Date published = DateUtils.parseRFC3339Date(s_published);
+				Date now = new Date();
+				if ( (now.getTime() - published.getTime()) >  ( 60 * 60 *1000) ) {
+					clearCache();
+				} else {
+					loadStreamsForNewer();
+				}
+			} catch (Exception e) {
+				Log.e(APP_NAME,e.getMessage());
+				loadStreamsForNewer();
+			}
+			
 		}
 	}
 	
