@@ -76,6 +76,11 @@ public class ComposeActivity extends Activity {
 		setContentView(R.layout.activity_compose);
 		Bundle extras = getIntent().getExtras();
 
+		// Get details of Share content by Intent
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+
 		String accountUUID = "";
 		
 		boolean multiAccount = true;
@@ -144,6 +149,12 @@ public class ComposeActivity extends Activity {
 		
 		mNotificationManager.cancel(0);
 		
+		if (Intent.ACTION_SEND.equals(action) && type != null) {
+			if (type.equals("text/plain")) {
+				handleSendText(intent); // Handle text, link etc.
+			}
+			// add else if for other types (images etc.)
+		}
 	}
 
 	@Override
@@ -173,6 +184,16 @@ public class ComposeActivity extends Activity {
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
+	}
+
+	void handleSendText(Intent intent) {
+		String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+		if (sharedText != null) {
+			Log.d(APP_NAME, "Shared text: " + sharedText);
+			// Update UI to reflect text being shared
+			mNote = (EditText) findViewById(R.id.note);
+			mNote.setText(sharedText);
+		}
 	}
     
     private void postComplete() {
