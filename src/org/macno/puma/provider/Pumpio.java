@@ -362,9 +362,9 @@ public class Pumpio {
 			appImage.put("url", "http://gitorious.org/puma-droid/puma/blobs/raw/master/res/drawable-xxhdpi/puma_logo.jpg");
 
 			generator
-			.put("summary", "<a href='http://gitorious.org/puma-droid'>PumpFM</a>  is a pump.io scrobbler for android")
-			.put("displayName", "PumpFM")
-			.put("id","org.macno.pumpfm")
+			.put("summary", "<a href='http://gitorious.org/puma-droid'>Puma</a>  is a pump.io client for android")
+			.put("displayName", "Puma")
+			.put("id","org.macno.puma")
 			.put("objectType","application")
 			.put("url", "http://gitorious.org/puma-droid")
 			.put("image", appImage);
