@@ -201,6 +201,10 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				Log.d(APP_NAME,"Asking for older than "  + last.optString("id"));
 				try {
 					JSONObject stream = mPumpio.fetchStream(mFeed, null, last.optString("id"), 20);
+					if(stream == null) {
+						mHandler.sendLoadStramFailed();
+						return;
+					}
 					mItems = stream.optJSONArray("items");
 
 					mHandler.sendReloadedOlder();
