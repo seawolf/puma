@@ -11,6 +11,7 @@
     <string name="action_compose">Redactar</string>
     <string name="action_add_account">Agregar cuenta</string>
     <string name="action_post">Publicar</string>
+    <string name="select_file">Elegir fichero</string>
     <string name="action_clear_cache">Limpiar caché</string>
     
 <string name="who_like">A %s les gusta.</string>
@@ -34,6 +35,7 @@
 	<string name="btn_next">Siguiente</string>
 	<string name="auth_progress_msg">Por favor, espera, autenticación en progreso</string>
 	<string name="post_complete">Nota publicada</string>
+	<string name="post_failed">¡Oh no! Fallo al publicar la nota</string>
 	<string name="title">Título</string>
 	<string name="title_hint_optional">Título (opcional)</string>
 	<string name="compose_note_hint">Redactar nota</string>
