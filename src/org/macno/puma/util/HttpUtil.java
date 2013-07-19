@@ -1,5 +1,7 @@
 package org.macno.puma.util;
 
+import static org.macno.puma.PumaApplication.APP_NAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,6 +53,7 @@ import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MIME;
@@ -81,8 +84,8 @@ public class HttpUtil {
 
 	private static final String VERSION = "1.1";
 
-	private static final String IMAGE_MIME_JPG = "image/jpeg";
-	private static final String IMAGE_MIME_PNG = "image/png";
+	public static final String IMAGE_MIME_JPG = "image/jpeg";
+	public static final String IMAGE_MIME_PNG = "image/png";
 
 	public static final String GET = "GET";
 	public static final String POST = "POST";
@@ -236,6 +239,18 @@ public class HttpUtil {
 		return json;
 	}
 
+	public JSONObject getJsonObject(String url, String mimeType, byte[] data) throws HttpUtilException {
+		JSONObject json = null;
+		try {
+			setContentType(mimeType);
+			json = new JSONObject(StreamUtil.toString(requestData(url,POST,null,data,0)));
+		} catch (JSONException e) {
+			throw new HttpUtilException(998,"Non json response: " + e.getMessage());
+		} catch (IOException e) {
+			throw new HttpUtilException(1200,"IOException: " + e.getMessage());
+		}
+		return json;
+	}
 
 	public JSONArray getJsonArray(String url) throws HttpUtilException {
 		return getJsonArray(url,GET,null);
@@ -310,7 +325,7 @@ public class HttpUtil {
 		return requestData(url,httpMethod, null, body, loop);
 	}
 
-	public InputStream requestData(String url, String httpMethod, ArrayList<NameValuePair> params, String body, int loop) throws HttpUtilException, SSLException {
+	public InputStream requestData(String url, String httpMethod, ArrayList<NameValuePair> params, Object body, int loop) throws HttpUtilException, SSLException {
 
 		URI uri;
 
@@ -329,7 +344,17 @@ public class HttpUtil {
 			HttpPost post = new HttpPost(uri);
 			if(body != null && !"".equals(body)) {
 				try {
-					post.setEntity(new StringEntity(body,HTTP.UTF_8));
+					if(body instanceof String)
+						post.setEntity(new StringEntity((String)body,HTTP.UTF_8));
+					else if(body instanceof byte[]) {
+						
+						post.setEntity(new ByteArrayEntity((byte[])body));
+						
+						Log.d(APP_NAME, "posting bytes....");
+					} else {
+						throw new HttpUtilException(-200,"Body content set but unkown type! " + body.getClass().getCanonicalName());
+					}
+					
 				} catch (UnsupportedEncodingException e) {
 					throw new HttpUtilException(1300,"UnsupportedEncodingException: " + e.getMessage());
 				}
@@ -388,7 +413,7 @@ public class HttpUtil {
 		try {
 			Header[] headers = method.getAllHeaders();
 			for (int i=0;i<headers.length;i++) {
-				Log.d("HttpUtil", headers[i].getName() + "\n\t" + headers[i].getValue());
+				Log.d(APP_NAME, headers[i].getName() + "\n\t" + headers[i].getValue());
 			}
 			response = mClient.execute(method);
 		} catch(SSLException e) {
@@ -445,6 +470,11 @@ public class HttpUtil {
 			}
 
 		} else if (statusCode != 200) {
+			try {
+				Log.e(APP_NAME,StreamUtil.toString(response.getEntity().getContent()));
+			} catch(Exception e) {
+				
+			}
 			throw new HttpUtilException(999,"Unmanaged response code: " + statusCode);
 		}
 

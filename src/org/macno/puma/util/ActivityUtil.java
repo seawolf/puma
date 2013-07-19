@@ -6,9 +6,12 @@ import java.text.ParseException;
 
 import org.json.JSONObject;
 import org.macno.puma.R;
+import org.macno.puma.provider.Pumpio;
 import org.macno.puma.view.RemoteImageView;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -54,33 +57,41 @@ public class ActivityUtil {
 	
 	public static String getObjectImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("image");
+		
+		return imgo != null ? imgo.optString("url",null) : null;
+	}
+	public static String getObjectFullImage(JSONObject obj) {
+		JSONObject imgo = obj.optJSONObject("fullImage");
+		
 		return imgo != null ? imgo.optString("url",null) : null;
 	}
 	
-	public static LinearLayout getViewActivity(Context mContext,JSONObject act) {
-		return ActivityUtil.getViewActivity(mContext, act, true, false);
+	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act) {
+		return ActivityUtil.getViewActivity(pumpio,  act, true, false);
 	}
 	
-	public static LinearLayout getViewActivity(Context mContext,JSONObject act, boolean showCounterBar, boolean clickableLink) {
+	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act, boolean showCounterBar, boolean clickableLink) {
 		
-		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater) pumpio.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.activity_row, null);
 
+		String verb = act.optString("verb");
 		JSONObject obj = act.optJSONObject("object");
 		JSONObject actor = ActivityUtil.getActor(act);
 		String objectType = obj.optString("objectType");
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		TextView note = (TextView)view.findViewById(R.id.note);
 		
-		if("post".equals(act.optString("verb"))) {
+		Log.d(APP_NAME,"Verb: " + verb + " / what: " + objectType);
+		if("post".equals(verb)) {
 			String message="";
 			String what = "";
 			if(objectType.equals("note")) {
-				what = mContext.getString(R.string.objecttype_note);
+				what = pumpio.getContext().getString(R.string.objecttype_note);
 			} else if(objectType.equals("comment")) {
-				what = mContext.getString(R.string.objecttype_comment);
+				what = pumpio.getContext().getString(R.string.objecttype_comment);
 			} else if(objectType.equals("image")) {
-				what = mContext.getString(R.string.objecttype_image);
+				what = pumpio.getContext().getString(R.string.objecttype_image);
 			} else {
 				what = "something";
 			}
@@ -94,7 +105,6 @@ public class ActivityUtil {
 						ActivityUtil.showCounterBar(view, obj);
 					}
 				} catch(Exception e) {
-					Log.e(APP_NAME,"Setting note html: " + e.getMessage(),e);
 					note.setText(ActivityUtil.getContent(obj));
 				}
 			} else if("comment".equals(objectType)) {
@@ -109,8 +119,23 @@ public class ActivityUtil {
 				noteImage.setVisibility(View.VISIBLE);
 				String imageURL = ActivityUtil.getObjectImage(obj);
 				if(imageURL != null) {
-					noteImage.setRemoteURI(imageURL);
+					Log.e(APP_NAME,"Image URL: " + imageURL);
+					noteImage.setRemoteURI(pumpio.getHttpUtil(), imageURL);
 					noteImage.loadImage();
+					if(clickableLink) {
+						final String fullImageURL = ActivityUtil.getObjectFullImage(obj);
+						final Context context = pumpio.getContext();
+						if(fullImageURL != null && !"".equals(fullImageURL)) {
+						noteImage.setOnClickListener(new View.OnClickListener() {
+							
+							@Override
+							public void onClick(View v) {
+								Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fullImageURL));
+								context.startActivity(myIntent);
+							}
+						});
+						}
+					}
 				} else {
 					Log.e(APP_NAME,"Uhm an image activity without the image object");
 				}
@@ -121,77 +146,77 @@ public class ActivityUtil {
 			} else {
 				
 			}
-			message = mContext.getString(R.string.msg_posted,ActivityUtil.getActorBestName(actor), what);
+			message = pumpio.getContext().getString(R.string.msg_posted,ActivityUtil.getActorBestName(actor), what);
 			sender.setText(message);
 			
 			
-		} else if ("favorite".equals(act.optString("verb"))) {
+		} else if ("favorite".equals(verb)) {
 			String message="";
 			String what = "";
 			if(objectType.equals("note")) {
-				what = mContext.getString(R.string.objecttype_note);
+				what = pumpio.getContext().getString(R.string.objecttype_note);
 			} else if(objectType.equals("comment")) {
-				what = mContext.getString(R.string.objecttype_comment);
+				what = pumpio.getContext().getString(R.string.objecttype_comment);
 			} else if(objectType.equals("image")) {
-				what = mContext.getString(R.string.objecttype_image);
+				what = pumpio.getContext().getString(R.string.objecttype_image);
 			} else {
 				what = "something";
 			}
-			message = mContext.getString(R.string.msg_favorited,ActivityUtil.getActorBestName(actor),  what);
+			message = pumpio.getContext().getString(R.string.msg_favorited,ActivityUtil.getActorBestName(actor),  what);
 			sender.setText(message);
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
-		} else if ("share".equals(act.optString("verb"))) {
+		} else if ("share".equals(verb)) {
 			String message="";
 			String what = "";
 			if(objectType.equals("note")) {
-				what = mContext.getString(R.string.objecttype_note);
+				what = pumpio.getContext().getString(R.string.objecttype_note);
 			} else if(objectType.equals("comment")) {
-				what = mContext.getString(R.string.objecttype_comment);
+				what = pumpio.getContext().getString(R.string.objecttype_comment);
 			} else if(objectType.equals("image")) {
-				what = mContext.getString(R.string.objecttype_image);
+				what = pumpio.getContext().getString(R.string.objecttype_image);
 			} else {
 				what = "something";
 			}
 			JSONObject originalActor = ActivityUtil.getActor(obj);
 			if(originalActor != null) {
-				message = mContext.getString(R.string.msg_shareded_from,ActivityUtil.getActorBestName(actor), what, ActivityUtil.getActorBestName(originalActor));
+				message = pumpio.getContext().getString(R.string.msg_shareded_from,ActivityUtil.getActorBestName(actor), what, ActivityUtil.getActorBestName(originalActor));
 			} else {
-				message = mContext.getString(R.string.msg_shareded,ActivityUtil.getActorBestName(actor), what);
+				message = pumpio.getContext().getString(R.string.msg_shareded,ActivityUtil.getActorBestName(actor), what);
 			}
 			sender.setText(message);
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
-		} else if ("follow".equals(act.optString("verb"))) {
+		} else if ("follow".equals(verb)) {
 			String message="";
 			
 			JSONObject originalActor = ActivityUtil.getActor(obj);
 			if(originalActor != null) {
-				message = mContext.getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
 			} else {
-				message = mContext.getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), "you");
+				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), "you");
 			}
 			sender.setText(message);
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
-		} else if ("stop-following".equals(act.optString("verb"))) {
+		} else if ("stop-following".equals(verb)) {
 				String message="";
 				
 				JSONObject originalActor = ActivityUtil.getActor(obj);
 				if(originalActor != null) {
-					message = mContext.getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
 				} else {
-					message = mContext.getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), "you");
+					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), "you");
 				}
 				sender.setText(message);
 				String content = ActivityUtil.getContent(obj);
 				if(content != null)
 					note.setText(Html.fromHtml(content));
 		} else {
-			String what = act.optString("verb");
+			String what = verb;
 
 			sender.setText(ActivityUtil.getActorBestName(actor) + " " + what);
 			String content = ActivityUtil.getContent(obj);
@@ -207,13 +232,14 @@ public class ActivityUtil {
 		if(avatar == null) {
 			avatar = "http://macno.org/images/unkown.png";
 		}
-		rim.setRemoteURI(avatar);
+		
+		rim.setRemoteURI(pumpio.getHttpUtil(), avatar);
 		rim.loadImage();
 		
 		TextView published = (TextView)view.findViewById(R.id.tv_published);
 		String s_published = ActivityUtil.getPublished(act);
 		try {
-			s_published = DateUtils.getRelativeDate(mContext, 
+			s_published = DateUtils.getRelativeDate(pumpio.getContext(), 
 					DateUtils.parseRFC3339Date(s_published)
 					);
 		} catch (ParseException e) {
@@ -244,7 +270,7 @@ public class ActivityUtil {
 			cnt_shares.setText(shares.optString("totalItems"));
 	}
 	
-	public static LinearLayout getViewComment(Context context, LayoutInflater inflater, JSONObject item, boolean even) {
+	public static LinearLayout getViewComment(Pumpio pumpio, LayoutInflater inflater, JSONObject item, boolean even) {
 		if(item == null) {
 			Log.d(APP_NAME,"getViewComment but item is null");
 			return null;
@@ -253,7 +279,7 @@ public class ActivityUtil {
 		
 		LinearLayout ll_comment = (LinearLayout)view.findViewById(R.id.ll_comment);
 		int color = even ? R.color.bg_comment_even : R.color.bg_comment_odd;
-		ll_comment.setBackgroundColor( context.getResources().getColor(color) );
+		ll_comment.setBackgroundColor(pumpio.getContext().getResources().getColor(color) );
 		TextView tv_comment = (TextView)view.findViewById(R.id.comment);
 		
 		String content = item.optString("content");
@@ -270,7 +296,7 @@ public class ActivityUtil {
 			if(avatar == null) {
 				avatar = "http://macno.org/images/unkown.png";
 			}
-			rim.setRemoteURI(avatar);
+			rim.setRemoteURI(pumpio.getHttpUtil(), avatar);
 			rim.loadImage();
 			
 			TextView sender = (TextView)view.findViewById(R.id.tv_sender);
@@ -282,7 +308,7 @@ public class ActivityUtil {
 		if(s_published != null) {
 //			Log.d(APP_NAME,"published <<< " + s_published);
 			try {
-				s_published = DateUtils.getRelativeDate(context, 
+				s_published = DateUtils.getRelativeDate(pumpio.getContext(), 
 						DateUtils.parseRFC3339Date(s_published)
 						);
 //				Log.d(APP_NAME,"published >>> " + s_published);

@@ -33,6 +33,8 @@ public class Pumpio {
 	
 	private static final String WHOAMI_URL = "/api/whoami";
 	private static final String POST_NOTE_URL = "/api/user/%s/feed";
+	private static final String POST_IMAGE_URL = "/api/user/%s/uploads";
+	
 	
 	private static final String POST_MINOR_ACTIVITY_URL = "/api/user/%s/feed/minor";
 	
@@ -85,6 +87,14 @@ public class Pumpio {
 		
 	}
 
+	public HttpUtil getHttpUtil() {
+		return mHttpUtil;
+	}
+	
+	public Context getContext() {
+		return mContext;
+	}
+	
 	public JSONObject getWhoami() {
 		String url = prepareUrl(WHOAMI_URL);
 		try {
@@ -154,7 +164,7 @@ public class Pumpio {
 		return ret;
 	}
 	
-	public String getStremHash(String feed) {
+	public String getStreamHash(String feed) {
 		String url = null;
 		if(feed.startsWith("http://") || feed.startsWith("https://")) {
 			url = feed;
@@ -206,23 +216,69 @@ public class Pumpio {
 		return ret;
 	}
 	
-	public boolean postNote(JSONObject inReplyTo, String note, boolean publicNote, Location location) {
+	public boolean postImage(String title, String note, boolean isPublicNote, Location location, String mimeType, byte[] data ) {
 		
-		JSONObject obj = new JSONObject();
+		String url = prepareUrl(String.format(POST_IMAGE_URL, mAccount.getUsername()));
+
+		JSONObject response = null;
+		boolean ret = false;
+		try {
+			response = mHttpUtil.getJsonObject(url,mimeType,data);
+		} catch (HttpUtilException e) {
+			Log.e(APP_NAME,"ERROR POSTING IMAGE: " + e.getMessage(),e);
+		}
+		if(response != null) {
+			JSONObject imageObj = new JSONObject();
+			try {
+				imageObj.put("id", response.getString("id"));
+				imageObj.put("objectType","image");
+				imageObj.put("displayName",title);
+				imageObj.put("content",note);
+				imageObj.put("image",response.get("image"));
+				if(postNote(imageObj,null,null,null,isPublicNote,location,false)) {
+					ret = postNote(imageObj,null,null,null,isPublicNote,location,true);
+				}
+			} catch(JSONException e) {
+				
+			}
+		}
+		
+		return ret;
+	}
+	
+	public boolean postNote(JSONObject inReplyTo, String note, boolean publicNote, Location location) {
+		return postNote(null,inReplyTo, null, note, publicNote,location, false);
+	}
+	
+	public boolean postNote(JSONObject obj, JSONObject inReplyTo, String title, String note, boolean publicNote, Location location, boolean isUpdate) {
+		
+		boolean isReusingObject = false;
+		if(obj == null) {
+			obj = new JSONObject();
+		} else {
+			isReusingObject = true;
+		}
 		JSONObject act = new JSONObject();
 		
 		try {
 			if(inReplyTo == null) {
-				obj.put("objectType", "note");
+				if(!isReusingObject) {
+					obj.put("objectType", "note");				
+				}
 			} else {
 				obj.put("objectType", "comment");
 				obj.put("inReplyTo", inReplyTo);
 			}
-			
-			obj.put("content", note);
+			if(title != null) {
+				obj.put("displayName", title);
+			}
+			if(note != null) {
+				obj.put("content",note);
+			}
 
+			
 			act.put("generator", getGenerator());
-			act.put("verb", "post");
+			act.put("verb", isUpdate ? "update" : "post" );
 			act.put("object", obj);
 			if(publicNote) {
 				
@@ -253,9 +309,8 @@ public class Pumpio {
 		try {
 			if(mDebug)
 				Log.d(APP_NAME, act.toString(3));
-			JSONObject ret = mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
-			if(mDebug)
-				Log.d(APP_NAME, ret.toString(3));
+			mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
+			
 			return true;
 		} catch(HttpUtilException e) {
 			Log.e(APP_NAME,e.getMessage(),e);

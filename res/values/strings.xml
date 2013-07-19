@@ -11,6 +11,7 @@
     <string name="action_compose">Compose</string>
     <string name="action_add_account">Add account</string>
     <string name="action_post">Publish</string>
+    <string name="select_file">Choose file</string>
     <string name="action_clear_cache">Clear cache</string>
     
     <string name="who_like">%s like this.</string>
@@ -34,6 +35,7 @@
 	<string name="btn_next">Next</string>
 	<string name="auth_progress_msg">Please wait, authentication in progress</string>
 	<string name="post_complete">Note published</string>
+	<string name="post_failed">Doh! Failed to publish the note</string>
 	<string name="title">Title</string>
 	<string name="title_hint_optional">Title (optional)</string>
 	<string name="compose_note_hint">Compose note</string>

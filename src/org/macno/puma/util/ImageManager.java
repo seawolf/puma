@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -28,9 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.params.HttpConnectionParams;
 
@@ -52,12 +50,16 @@ public class ImageManager implements ImageCache {
 	// MD5 hasher.
 	private MessageDigest mDigest;
 
+	private HttpUtil mHttpUtil;
+	
 	// We want the requests to timeout quickly.
 	// Tweets are processed in a batch and we don't want to stay on one too long.
 	private static final int CONNECTION_TIMEOUT_MS = 10 * 1000;
 	private static final int SOCKET_TIMEOUT_MS = 10 * 1000;
 
-	public ImageManager(Context context) {
+	private static ImageManager mImageManager;
+	
+	private ImageManager(Context context) {
 		mContext = context;
 		mCache = new HashMap<String, SoftReference<Bitmap>>();
 
@@ -68,11 +70,18 @@ public class ImageManager implements ImageCache {
 			throw new RuntimeException("No MD5 algorithm.");
 		}
 	}
-
-	public void setContext(Context context) {
-		mContext = context;
+	
+	public static ImageManager getImageManager(Context context) {
+		if(mImageManager == null) {
+			mImageManager = new ImageManager(context);
+		}
+		return mImageManager;
 	}
-
+	
+	public void setHttpUtil(HttpUtil httpUtil) {
+		mHttpUtil = httpUtil;
+	}
+	
 	private String getHashString(MessageDigest digest) {
 		StringBuilder builder = new StringBuilder();
 
@@ -128,24 +137,22 @@ public class ImageManager implements ImageCache {
 		HttpConnectionParams.setSoTimeout(get.getParams(),
 				SOCKET_TIMEOUT_MS);
 
-		HttpResponse response;
+		InputStream is= null;
 
-		HttpUtil hm = new HttpUtil();
+		if(mHttpUtil == null) {
+			mHttpUtil = new HttpUtil();
+		}
+		mHttpUtil.setHost(get.getURI().getHost(), true);
 		
-		hm.setHost(get.getURI().getHost(), true);
 		try {
-			response = hm.getHttpClient().execute(get);
-		} catch (ClientProtocolException e) {
-			throw new IOException("Invalid client protocol.");
+			is = mHttpUtil.requestData(url, HttpUtil.GET,null, null,0);
+		} catch (HttpUtilException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			throw new IOException(e.getMessage());
 		}
 
-		if (response.getStatusLine().getStatusCode() != 200) {
-			throw new IOException("Non OK response: " +
-					response.getStatusLine().getStatusCode());
-		}
-
-		HttpEntity entity = response.getEntity();
-		BufferedInputStream bis = new BufferedInputStream(entity.getContent(),
+		BufferedInputStream bis = new BufferedInputStream(is,
 				8 * 1024);
 		Bitmap bitmap = BitmapFactory.decodeStream(bis);
 		bis.close();

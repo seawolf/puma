@@ -54,7 +54,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		mPumpio = new Pumpio(mContext);
 		mPumpio.setAccount(mAccount);
 		mFeed = feed;
-		mFeedHash = mPumpio.getStremHash(mFeed);
+		mFeedHash = mPumpio.getStreamHash(mFeed);
 		mActivityManager = new ActivityManager(mContext);
 		loadCache();
 		if(getCount()==0) {
@@ -82,7 +82,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		
 		JSONObject act  = getItem(position);
-		LinearLayout view = ActivityUtil.getViewActivity(getContext(), act);
+		LinearLayout view = ActivityUtil.getViewActivity(mPumpio, act);
 		view.setOnClickListener(new View.OnClickListener() {
 			
 			@Override

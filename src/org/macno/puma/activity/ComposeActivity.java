@@ -3,6 +3,8 @@ package org.macno.puma.activity;
 import static org.macno.puma.PumaApplication.APP_NAME;
 import static org.macno.puma.PumaApplication.K_PUMA_SETTINGS;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import org.macno.puma.R;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
 import org.macno.puma.provider.Pumpio;
+import org.macno.puma.util.ImageUtil;
 import org.macno.puma.util.LocationUtil;
 import org.markdown4j.Markdown4jProcessor;
 
@@ -21,11 +24,18 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.provider.MediaStore.Images.ImageColumns;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +45,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ComposeActivity extends Activity {
@@ -50,6 +61,8 @@ public class ComposeActivity extends Activity {
 	
 	private static final String K_GEO_ENABLED_GLOBALLY = "geoEnabledGlobally";
 
+	private final int CHOOSE_FILE_ID=0;
+	
 	private Account mAccount;
 	private ArrayList<Account> mAccounts;
 	
@@ -58,8 +71,9 @@ public class ComposeActivity extends Activity {
 
 	private Context mContext;
 
-//	private EditText mTitle;
+	private EditText mTitle;
 	private EditText mNote;
+	private TextView mTextViewFileName;
 	private CheckBox mCheckBoxLocation;
 	private CheckBox mCheckBoxPublic;
 
@@ -68,6 +82,8 @@ public class ComposeActivity extends Activity {
 	private boolean mPreserveAccount=false;
 	private String mActivityId;
 	private int mAction = 0;
+	
+	private File mFilename;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -123,10 +139,9 @@ public class ComposeActivity extends Activity {
 		mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mSettings = getSharedPreferences(K_PUMA_SETTINGS,Context.MODE_PRIVATE);
 		
-		
-//		mTitle = (EditText)findViewById(R.id.title);
+		mTitle = (EditText)findViewById(R.id.title);
 		mNote = (EditText)findViewById(R.id.note);
-		
+		mTextViewFileName = (TextView)findViewById(R.id.filename);
 		
 		mCheckBoxLocation = (CheckBox)findViewById(R.id.enable_location);
 		handleGeoCheckbox();
@@ -152,6 +167,8 @@ public class ComposeActivity extends Activity {
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if (type.equals("text/plain")) {
 				handleSendText(intent); // Handle text, link etc.
+			} else if(type.startsWith("image/")) {
+				handleSendImage(intent);
 			}
 			// add else if for other types (images etc.)
 		}
@@ -171,6 +188,9 @@ public class ComposeActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.compose, menu);
+        if(mAction == ACTION_REPLY) {
+        	menu.removeItem(R.id.action_add_picture);
+        }
         return true;
     }
     
@@ -180,12 +200,77 @@ public class ComposeActivity extends Activity {
 	        case R.id.action_post:
 	        	onPostAction();
 	        	return true;
-	        
+	        	
+	        case R.id.action_add_picture:
+	        	showFileChooser();
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
-
+    
+    private void showFileChooser() {
+		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+		intent.setType("image/*");
+		startActivityForResult(intent, CHOOSE_FILE_ID);
+	}
+    
+    protected void onActivityResult(int requestCode, int resultCode,
+			Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
+		
+		if (requestCode == CHOOSE_FILE_ID) {
+			if (resultCode == RESULT_OK) {
+				Uri uri = intent.getData();
+				if (uri != null) {
+					Log.d(APP_NAME,"mUri: " + uri);
+					setFileFromUri(uri);
+				} 
+			} 
+			
+		}
+	}
+    
+    private boolean setFileFromUri(Uri uri) {
+    	boolean isFile = false;
+    	String[] projection = { MediaStore.Images.Media.DATA };
+		Cursor cursor = getContentResolver().query(uri, projection, null, null,null);
+		if (cursor != null) {
+			if (cursor.moveToFirst()) {
+				mFilename = new File( cursor.getString(cursor
+						.getColumnIndexOrThrow(ImageColumns.DATA)));
+				
+				if(mFilename != null && mFilename.exists() && mFilename.canRead()) {
+					Log.d(APP_NAME,"mFilename: " + mFilename.getAbsolutePath());
+					onAddedPicture();
+					isFile=true;
+				} else {
+					Toast.makeText(mContext, "There's a problem accessing this image...", Toast.LENGTH_SHORT).show();
+				}
+			
+			}
+			cursor.close();
+//			mTextViewFileName.setText(mFilename.getName());
+		}
+		if(!isFile) {
+			onRemovedPicture();
+		}
+		return isFile;
+    }
+    
+    private void onAddedPicture() {
+    	mTextViewFileName.setText(mFilename.getName());
+		findViewById(R.id.ll_attachment).setVisibility(View.VISIBLE);
+		findViewById(R.id.ll_title).setVisibility(View.VISIBLE);
+    }
+    
+    private void onRemovedPicture() {
+    	mFilename = null;
+    	mTextViewFileName.setText("");
+		findViewById(R.id.ll_attachment).setVisibility(View.GONE);
+		findViewById(R.id.ll_title).setVisibility(View.GONE);
+    }
+    
 	void handleSendText(Intent intent) {
 		String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
 		if (sharedText != null) {
@@ -195,9 +280,20 @@ public class ComposeActivity extends Activity {
 			mNote.setText(sharedText);
 		}
 	}
+	
+	void handleSendImage(Intent intent) {
+		Uri uri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+		if (uri != null) {
+			setFileFromUri(uri);
+		}
+	}
     
     private void postComplete() {
     	Toast.makeText(this, R.string.post_complete, Toast.LENGTH_SHORT).show();
+    }
+    
+    private void postFailed() {
+    	Toast.makeText(this, R.string.post_failed, Toast.LENGTH_SHORT).show();
     }
     
     private static class PostHandler extends Handler {
@@ -205,6 +301,7 @@ public class ComposeActivity extends Activity {
     	private final WeakReference<ComposeActivity> mTarget;
     	
     	private static final int MSG_POST_OK = 0;
+    	private static final int MSG_POST_KO = 1;
     	
     	PostHandler(ComposeActivity target) {
 			mTarget = new WeakReference<ComposeActivity>(target);
@@ -218,12 +315,22 @@ public class ComposeActivity extends Activity {
 			case MSG_POST_OK:
 				target.postComplete();
 				break;
+				
+			case MSG_POST_KO:
+				target.postFailed();
+				break;
 			}
 		}
     	
     	void sendPostComplete() {
     		sendEmptyMessage(MSG_POST_OK);
     	}
+    	
+    	void sendPostFailed() {
+    		sendEmptyMessage(MSG_POST_KO);
+    	}
+    	
+    	
     }
     
 	private void hideSpinner() {
@@ -303,6 +410,8 @@ public class ComposeActivity extends Activity {
 		} catch(IOException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}
+		String title = mTitle.getText().toString();
+		
 		Location location = null;
 		if(mCheckBoxLocation.isChecked()) {
 			LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -323,18 +432,61 @@ public class ComposeActivity extends Activity {
 			// 
 		}
 		
-		post(current, note, inReplyTo, mCheckBoxPublic.isChecked(), location);
+		post(current, title,  note, inReplyTo, mCheckBoxPublic.isChecked(), location);
 		
 	}
 	
-	private void post(final Account account, final String note, final JSONObject inReplyTo, final boolean publicNote, final Location location ) {
+	private void post(final Account account, final String title,  final String note, final JSONObject inReplyTo, final boolean isPublicNote, final Location location ) {
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				Pumpio pumpio = new Pumpio(mContext);
 				pumpio.setAccount(account);
-				pumpio.postNote(inReplyTo, note, publicNote, location);
-				mHandler.sendPostComplete();
+				boolean posted = false;
+				if(mFilename != null) {
+					
+					try {
+						
+						BitmapFactory.Options options = new BitmapFactory.Options();
+						options.inJustDecodeBounds = true;
+						BitmapFactory.decodeFile(mFilename.getAbsolutePath(),options);
+						int imageHeight = options.outHeight;
+						int imageWidth = options.outWidth;
+						String imageType = options.outMimeType;
+						
+						Log.d(APP_NAME,"imageHeight: " + imageHeight);
+						Log.d(APP_NAME,"imageWidth: " + imageWidth);
+						Log.d(APP_NAME,"imageType: " + imageType);
+						
+						if(imageHeight > 1024 || imageWidth > 1024) {
+						    // Calculate inSampleSize
+						    options.inSampleSize = ImageUtil.calculateInSampleSize(options, 1024, 1024);
+						}
+					    // Decode bitmap with inSampleSize set
+					    options.inJustDecodeBounds = false;
+					    Bitmap bm = BitmapFactory.decodeFile(mFilename.getAbsolutePath(), options);
+					    
+					    ByteArrayOutputStream out = new ByteArrayOutputStream(10240);
+					    bm.compress(CompressFormat.JPEG, 100, out);
+						
+						posted = pumpio.postImage(title, note, isPublicNote, location, imageType, out.toByteArray());
+					} catch (Exception e) {
+						Log.e(APP_NAME,e.getMessage(),e);
+						mHandler.sendPostFailed();
+					}
+				} else {
+					try {
+						posted = pumpio.postNote(inReplyTo, note, isPublicNote, location);
+					} catch (Exception e) {
+						Log.e(APP_NAME,e.getMessage(),e);
+						mHandler.sendPostFailed();
+					}
+				}
+				if(posted) {
+					mHandler.sendPostComplete();
+				} else {
+					mHandler.sendPostFailed();
+				}
 			}
 		};
 		new Thread(runnable).start();

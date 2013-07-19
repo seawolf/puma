@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- 
+    
     <item
-		android:id="@+id/action_attach"
+		android:id="@+id/action_add_picture"
 		android:title="@string/select_file"
-		android:showAsAction="ifRoom"
-        android:icon="@drawable/add_attachment"
+		android:showAsAction="always"
+        android:icon="@drawable/add_picture"
 	/>
-	 -->
     <item
 		android:id="@+id/action_post"
 		android:title="@string/action_post"

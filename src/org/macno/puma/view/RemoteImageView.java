@@ -21,9 +21,12 @@
 
 package org.macno.puma.view;
 
+import static org.macno.puma.PumaApplication.APP_NAME;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import org.macno.puma.util.HttpUtil;
 import org.macno.puma.util.ImageManager;
 
 import android.content.Context;
@@ -42,7 +45,7 @@ public class RemoteImageView extends ImageView {
 	
 	public RemoteImageView(Context context, AttributeSet attrs) {
 		super(context, attrs, 0);
-		mImageManager = new ImageManager(context);
+		mImageManager = ImageManager.getImageManager(context);
 	}
 
 	public void setRemoteURI(String uri) {
@@ -51,6 +54,11 @@ public class RemoteImageView extends ImageView {
 		}
 	}
 
+	public void setRemoteURI(HttpUtil httpUtil, String uri) {
+		mRemote = uri;
+		mImageManager.setHttpUtil(httpUtil);
+	}
+	
 	public void loadImage(int resource) {
 		mResource=resource;
 		if (mRemote != null) {
@@ -68,17 +76,19 @@ public class RemoteImageView extends ImageView {
 	}
 	
 	private void doImageDownload() {
-		new Thread() {
+		Runnable runnable = new Runnable() {
+			@Override
             public void run() {
             	try {
             		mImageManager.put(mRemote);
-            		Log.d("RIV", "Downloaded");
+            		Log.d(APP_NAME, "Downloaded");
             		mHandler.imageDownloaded();
             	} catch(IOException e){
             		
             	}
             }
-		}.start();
+		};
+		new Thread(runnable).start();
 	}
 	
 	private void setFromLocal() {
@@ -94,7 +104,7 @@ public class RemoteImageView extends ImageView {
 		Bitmap bm = mImageManager.get(mRemote);
 		if(bm != null) {
 			setImageBitmap(bm);
-			Log.d("RIV","Loaded bitmap.");
+			Log.d(APP_NAME,"Loaded bitmap.");
 		}
 	}
 

@@ -87,7 +87,7 @@ public class ViewActivity extends Activity {
         }
         
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
-        ll_parent.addView(ActivityUtil.getViewActivity(mContext, mActivity,false, true));
+        ll_parent.addView(ActivityUtil.getViewActivity(mPumpio, mActivity,false, true));
 
         addLikes(ll_parent);
         
@@ -127,7 +127,7 @@ public class ViewActivity extends Activity {
 					addLoadingCommentsText(ll_parent);
 				}
 				for(int i=items.length()-1;i>=0;i--) {
-					LinearLayout view = ActivityUtil.getViewComment(mContext, inflater, items.optJSONObject(i), (i % 2 == 0));
+					LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, items.optJSONObject(i), (i % 2 == 0));
 					if(view != null) {
 						ll_parent.addView(view);
 					}
@@ -147,13 +147,14 @@ public class ViewActivity extends Activity {
 						R.string.loading_comments_1, 
 						R.string.loading_comments_2, 
 						R.string.loading_comments_3,
-						R.string.loading_comments_4
+						R.string.loading_comments_4,
+						R.string.loading_comments_1
 					};
 				int c=0;
 				while(mLoadingComments != null) {
 					mHandler.changeLoadingComment(loading[c]);
 					c++;
-					if(c >= loading.length) {
+					if(c == loading.length) {
 						c=0;
 					}
 					try {
@@ -283,7 +284,7 @@ public class ViewActivity extends Activity {
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		for(int i=mComments.length()-1;i>=0;i--) {
-			LinearLayout view = ActivityUtil.getViewComment(mContext, inflater, mComments.optJSONObject(i), (i % 2 == 0));
+			LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, mComments.optJSONObject(i), (i % 2 == 0));
 			if(view != null) {
 				ll_comments.addView(view);
 			}
