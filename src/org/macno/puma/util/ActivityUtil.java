@@ -261,6 +261,7 @@ public class ActivityUtil {
 			return null;
 		}
 		tv_comment.setText(Html.fromHtml(content));
+		tv_comment.setMovementMethod(LinkMovementMethod.getInstance());
 		
 		JSONObject actor = item.optJSONObject("author");
 		if(actor != null ) {
