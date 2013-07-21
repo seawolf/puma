@@ -18,10 +18,7 @@
     <string name="who_like_and_more">A %1$s y %2$s más les gusta.</string>
     <string name="who_likes">A %s le gusta esto.</string>
 
-  <string name="loading_comments_1">Cargando comentarios |</string>
-    <string name="loading_comments_2">Cargando comentarios /</string>
-    <string name="loading_comments_3">Cargando comentarios &#8212;</string>
-    <string name="loading_comments_4">Cargando comentarios \</string>
+  <string name="loading_comments_1">Cargando comentarios</string>
         
     <string name="load_stream_failed">Error al cargar los mensajes</string>
     <string name="load_comments_failed">Error al cargar los comentarios</string>
