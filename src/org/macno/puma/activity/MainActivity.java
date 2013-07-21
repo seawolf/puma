@@ -30,10 +30,11 @@ public class MainActivity extends Activity {
 				// Un solo profilo
 				// Avvio activity esercizi
 				account = accounts.get(0);
+				accountManager.setDefault(account);
 				startHomeActivity(account);
 				break;
 			default:
-				// Più di un profilo
+				// PiÔøΩ di un profilo
 				// Gli faccio scegliere quale.
 				
 			}
