@@ -4,8 +4,10 @@ import static org.macno.puma.PumaApplication.APP_NAME;
 
 import java.text.ParseException;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.macno.puma.R;
+import org.macno.puma.activity.ViewActivity;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.view.RemoteImageView;
 
@@ -17,6 +19,7 @@ import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -278,7 +281,7 @@ public class ActivityUtil {
 			cnt_shares.setText(shares.optString("totalItems"));
 	}
 	
-	public static LinearLayout getViewComment(Pumpio pumpio, LayoutInflater inflater, JSONObject item, boolean even) {
+	public static LinearLayout getViewComment(Pumpio pumpio, LayoutInflater inflater,final JSONObject item, boolean even, final ViewActivity activity) {
 		if(item == null) {
 			Log.d(APP_NAME,"getViewComment but item is null");
 			return null;
@@ -327,7 +330,36 @@ public class ActivityUtil {
 			
 		}
 		
+		final boolean liked = item.optBoolean("liked", false);
+		ImageView iv_liked = (ImageView)view.findViewById(R.id.iv_like);
+		if(liked) {
+			iv_liked.setImageResource(R.drawable.favorited);
+			
+		}
+		iv_liked.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				JSONObject target = ActivityUtil.getMinimumObject(item);
+				if(liked) {
+					activity.doUnfavorComment(v, target);
+				} else {
+					activity.doFavorComment(v, target);
+				}
+			}
+		});
 		return view;
 	}
-			
+
+	public static JSONObject getMinimumObject(JSONObject object) {
+		JSONObject target = new JSONObject();
+		try {
+			target.put("id",object.get("id"));
+			target.put("objectType",object.get("objectType"));
+		} catch(JSONException e) {
+			Log.e(APP_NAME, e.getMessage(),e);
+			return null;
+		}
+		return target;
+	}
 }

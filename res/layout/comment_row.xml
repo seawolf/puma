@@ -35,8 +35,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:padding="5dp" >
 
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            
+            android:layout_weight="1" >
+            
             <TextView
                 android:id="@+id/tv_sender"
                 android:layout_width="wrap_content"
@@ -48,7 +56,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6dp" />
+            </LinearLayout>
             
+            <ImageView
+                android:id="@+id/iv_like"
+                android:layout_weight="0"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/not_favorited"
+                android:contentDescription="@string/not_favorited"
+                />
         </LinearLayout>
     </LinearLayout>
 

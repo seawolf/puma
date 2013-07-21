@@ -3,6 +3,7 @@ package org.macno.puma.activity;
 import static org.macno.puma.PumaApplication.APP_NAME;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 
 import javax.net.ssl.SSLException;
 
@@ -27,7 +28,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,8 +55,9 @@ public class ViewActivity extends Activity {
 	private LinearLayout ll_comments;
 	
 	private Pumpio mPumpio;
+	private Animation mRotationAnimation;
 	
-	private TextView mLoadingComments;
+	private ImageView mLoadingComments;
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,13 +94,15 @@ public class ViewActivity extends Activity {
         	
         }
         
+        mRotationAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate);
+        
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
         ll_parent.addView(ActivityUtil.getViewActivity(mPumpio, mActivity,false, true));
 
-        addLikes(ll_parent);
+        addLikes();
         
         ll_comments = (LinearLayout)findViewById(R.id.ll_activity_replies);
-        addComments(ll_comments);
+        addComments();
 	}
 	
 	@Override
@@ -104,7 +112,7 @@ public class ViewActivity extends Activity {
 		super.onSaveInstanceState(outState);
 	}
 
-	private void addComments(LinearLayout ll_parent ) {
+	private void addComments() {
 		JSONObject obj = mActivity.optJSONObject("object");
 		if(obj == null) {
 			return;
@@ -126,56 +134,35 @@ public class ViewActivity extends Activity {
 					} else {
 						loadComments(replies.optString("url"));
 					}
-					addLoadingCommentsText(ll_parent);
+					addLoadingCommentsText();
 				}
 				for(int i=items.length()-1;i>=0;i--) {
-					LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, items.optJSONObject(i), (i % 2 == 0));
+					LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, items.optJSONObject(i), (i % 2 == 0),this);
 					if(view != null) {
-						ll_parent.addView(view);
+						ll_comments.addView(view);
 					}
 				}
 			}
 		}
 	}
 	
-	private void addLoadingCommentsText(LinearLayout ll_parent) {
-		mLoadingComments = new TextView(mContext);
-		mLoadingComments.setText(R.string.loading_comments_1);
-		ll_parent.addView(mLoadingComments,LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				int[] loading = {
-						R.string.loading_comments_1, 
-						R.string.loading_comments_2, 
-						R.string.loading_comments_3,
-						R.string.loading_comments_4,
-						R.string.loading_comments_1
-					};
-				int c=0;
-				while(mLoadingComments != null) {
-					mHandler.changeLoadingComment(loading[c]);
-					c++;
-					if(c == loading.length) {
-						c=0;
-					}
-					try {
-						Thread.sleep(400);
-					} catch (InterruptedException e) {
-						Log.e(APP_NAME,e.getMessage(),e);
-						return;
-					}
-				}
-			}
-		};
-		new Thread(runnable).start();
+	private void addLoadingCommentsText() {
+		
+		mLoadingComments = (ImageView)findViewById(R.id.iv_loading);
+		mLoadingComments.startAnimation(mRotationAnimation);
+		
+		LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_comments_loading);
+		ll_parent.setVisibility(View.VISIBLE);
+		
+		
 	}
 		
 	private void loadComments(final String feed) {
 		if(mLoading) {
 			return;
 		}
-		setProgressBarIndeterminateVisibility(true);
+		//setProgressBarIndeterminateVisibility(true);
+		Log.d(APP_NAME,"loading comments from " + feed);
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
@@ -187,6 +174,17 @@ public class ViewActivity extends Activity {
 						return;
 					}
 					JSONArray items = stream.optJSONArray("items");
+					if(items == null) {
+						mHandler.sendLoadCommentsFailed();
+						return;
+					}
+					Log.d(APP_NAME,"comments: loaded " + items.length() + " comments");
+					if(items.length() == 0){
+						// !? ?!
+						mHandler.sendLoadCommentsEmpty();
+						return;
+					}
+					
 					mComments = items;
 
 					mHandler.sendReloadComments();
@@ -198,10 +196,15 @@ public class ViewActivity extends Activity {
 		new Thread(runnable).start();
 	}
 	
-	private void addLikes(LinearLayout ll_parent ) {
+	private void addLikes() {
 		JSONObject obj = mActivity.optJSONObject("object");
 		if(obj == null) {
 			return;
+		}
+		boolean liked = obj.optBoolean("liked",false);
+		if(liked) {
+			ImageView iv = (ImageView)findViewById(R.id.iv_like);
+			iv.setImageResource(R.drawable.favorited);
 		}
 		JSONObject likes = obj.optJSONObject("likes");
 		if(likes != null) {
@@ -220,9 +223,7 @@ public class ViewActivity extends Activity {
 					}
 					whoLike.append(author);
 				}
-				TextView tv_likes = new TextView(mContext);
-				tv_likes.setPadding(5, 5, 5, 5);
-				tv_likes.setTextSize(12);
+				TextView tv_likes = (TextView)findViewById(R.id.tv_who_like);
 				if(items.length()==1) {
 					tv_likes.setText(getString(R.string.who_likes,whoLike.toString()));
 				} else if( items.length() > 1 ){
@@ -232,9 +233,48 @@ public class ViewActivity extends Activity {
 						tv_likes.setText(getString(R.string.who_like,whoLike.toString()));
 					}
 				}
-				ll_parent.addView(tv_likes);
 			}
 		}
+	}
+	public void doFavorite(View v) {
+		JSONObject obj = mActivity.optJSONObject("object");
+		if(obj == null) {
+			return;
+		}
+		doFavorite(v,obj.optBoolean("liked",false),ActivityUtil.getMinimumObject(obj));
+	}
+	
+	private HashMap<String, View> mFavoriteViewMap = new HashMap<String, View>();
+	
+	public void doFavorite(View v, final boolean liked, final JSONObject target) {
+
+		v.startAnimation(mRotationAnimation);
+
+		final String id = target.optString("id");
+		mFavoriteViewMap.put(id, v);
+
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				Pumpio pumpio = new Pumpio(mContext);
+				pumpio.setAccount(mAccount);
+				
+				try {
+					if(liked) {
+						pumpio.unfavoriteNote(target);
+						mHandler.sendUnfavoriteComplete(id);
+					} else {
+						pumpio.favoriteNote(target);
+						mHandler.sendFavoriteComplete(id);
+					}
+
+				} catch(Exception e) {
+					Log.e(APP_NAME, e.getMessage(),e);
+					mHandler.sendFavoriteError(id);
+				}
+			}
+		};
+		new Thread(runnable).start();
 	}
 	
 	@Override
@@ -282,7 +322,8 @@ public class ViewActivity extends Activity {
 			public void run() {
 				Pumpio pumpio = new Pumpio(mContext);
 				pumpio.setAccount(mAccount);
-				pumpio.shareNote(mActivity.optJSONObject("object"));
+				JSONObject target = ActivityUtil.getMinimumObject(mActivity.optJSONObject("object"));
+				pumpio.shareNote(target);
 				mHandler.sendShareComplete();
 			}
 		};
@@ -291,22 +332,60 @@ public class ViewActivity extends Activity {
 	}
 	
 	private void reloadComments() {
-		setProgressBarIndeterminateVisibility(false);
-		
+//		setProgressBarIndeterminateVisibility(false);
+		if(mLoadingComments!=null) {
+			mLoadingComments.clearAnimation();
+			LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_comments_loading);
+			ll_parent.setVisibility(View.GONE);
+		}
 		if(mComments == null) {
 			return;
 		}
 		ll_comments.removeAllViews();
-		if(mLoadingComments != null) {
-			mLoadingComments = null;
-		}
+		
 		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		for(int i=mComments.length()-1;i>=0;i--) {
-			LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, mComments.optJSONObject(i), (i % 2 == 0));
+			LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, mComments.optJSONObject(i), (i % 2 == 0),this);
 			if(view != null) {
 				ll_comments.addView(view);
 			}
+		}
+	}
+	
+	public void doUnfavorComment(View v, JSONObject object) {
+		doFavorite(v,true,object);
+	}
+
+	public void doFavorComment(View v, JSONObject object) {
+		doFavorite(v,false,object);
+	}
+
+	private void onFavoritedError(String targetId) {
+		
+		View iv = mFavoriteViewMap.get(targetId);
+		mFavoriteViewMap.remove(targetId);
+		iv.clearAnimation();
+		Toast.makeText(mContext, getString(R.string.note_favorite_error), Toast.LENGTH_SHORT).show();
+	}
+	private void onUnfavoritedNote(String targetId) {
+		// Switch image..
+		ImageView iv = (ImageView)mFavoriteViewMap.get(targetId);
+		mFavoriteViewMap.remove(targetId);
+		iv.clearAnimation();
+		iv.setImageResource(R.drawable.not_favorited);
+		Toast.makeText(mContext, getString(R.string.note_unfavorited), Toast.LENGTH_SHORT).show();
+	}
+	
+	private void onFavoritedNote(boolean notify,String targetId) {
+		// Switch image..
+		
+		ImageView iv = (ImageView)mFavoriteViewMap.get(targetId);
+		mFavoriteViewMap.remove(targetId);
+		iv.clearAnimation();
+		iv.setImageResource(R.drawable.favorited);
+		if(notify) {
+			Toast.makeText(mContext, getString(R.string.note_favorited), Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -315,16 +394,21 @@ public class ViewActivity extends Activity {
 	}
 	
 	private void notifyLoadCommentsFailed() {
-		setProgressBarIndeterminateVisibility(false);
+		//setProgressBarIndeterminateVisibility(false);
 		if(mLoadingComments != null) {
-			mLoadingComments = null;
+			mLoadingComments.clearAnimation();
+			LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_comments_loading);
+			ll_parent.setVisibility(View.GONE);
 		}
 		Toast.makeText(mContext, R.string.load_comments_failed, Toast.LENGTH_LONG).show();
 	}
 	
-	private void changeLoadingComment(int string) {
-		if(mLoadingComments != null) {
-			mLoadingComments.setText(string);
+	private void notifyLoadCommentsEmpty() {
+//		setProgressBarIndeterminateVisibility(false);
+		if(mLoadingComments!=null) {
+			mLoadingComments.clearAnimation();
+			LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_comments_loading);
+			ll_parent.setVisibility(View.GONE);
 		}
 	}
 	
@@ -335,7 +419,10 @@ public class ViewActivity extends Activity {
     	private static final int MSG_SHARE_OK = 0;
     	private static final int MSG_RELOADED_NEWER = 1;
     	private static final int MSG_LOAD_COMMENTS_FAILED = 2;
-    	private static final int MSG_CHANGE_COMMENT = 3;
+    	private static final int MSG_FAV_OK = 4;
+    	private static final int MSG_UNFAV_OK = 5;
+    	private static final int MSG_FAV_ERROR = 6;
+    	private static final int MSG_LOAD_COMMENTS_EMPTY = 7;
     	
     	PostHandler(ViewActivity target) {
 			mTarget = new WeakReference<ViewActivity>(target);
@@ -343,24 +430,37 @@ public class ViewActivity extends Activity {
     	
     	public void handleMessage(Message msg) {
     		ViewActivity target = mTarget.get();
-    		
+    		Bundle data = msg.getData();
 			switch (msg.what) {
 			
 			case MSG_SHARE_OK:
 				target.onSharedNote();
 				break;
 				
+			case MSG_FAV_OK:
+				target.onFavoritedNote(true,data.getString("targetId"));
+				break;
+			
+			case MSG_UNFAV_OK:
+				target.onUnfavoritedNote(data.getString("targetId"));
+				break;
+				
+			case MSG_FAV_ERROR:
+				target.onFavoritedError(data.getString("targetId"));
+				break;
+				
 			case MSG_RELOADED_NEWER:
 				target.reloadComments();
+				break;
+			case MSG_LOAD_COMMENTS_EMPTY:
+				target.notifyLoadCommentsEmpty();
 				break;
 				
 			case MSG_LOAD_COMMENTS_FAILED:
 				target.notifyLoadCommentsFailed();
 				break;
 				
-	    	case MSG_CHANGE_COMMENT:
-	    		target.changeLoadingComment(msg.arg1);
-	    		break;
+	    	
 			}
 			
 
@@ -377,12 +477,35 @@ public class ViewActivity extends Activity {
     	void sendLoadCommentsFailed() {
     		sendEmptyMessage(MSG_LOAD_COMMENTS_FAILED);
     	}
-    	    	
-    	void changeLoadingComment(int string) {
+    	
+    	void sendLoadCommentsEmpty() {
+    		sendEmptyMessage(MSG_LOAD_COMMENTS_EMPTY);
+    	}
+    	
+    	void sendFavoriteComplete(String targetId) {
     		Message msg = new Message();
-			msg.what=MSG_CHANGE_COMMENT;
-			msg.arg1=string;
-			sendMessage(msg);
+    		msg.what = MSG_FAV_OK;
+    		Bundle data = new Bundle();
+    		data.putString("targetId", targetId);
+    		msg.setData(data);
+    		sendMessage(msg);
+    	}
+    	void sendUnfavoriteComplete(String targetId) {
+    		Message msg = new Message();
+    		msg.what = MSG_UNFAV_OK;
+    		Bundle data = new Bundle();
+    		data.putString("targetId", targetId);
+    		msg.setData(data);
+    		sendMessage(msg);
+    	}
+    	
+    	void sendFavoriteError(String targetId) {
+    		Message msg = new Message();
+    		msg.what = MSG_FAV_ERROR;
+    		Bundle data = new Bundle();
+    		data.putString("targetId", targetId);
+    		msg.setData(data);
+    		sendMessage(msg);
     	}
     }
 	

@@ -18,10 +18,7 @@
     <string name="who_like_and_more">%1$s and %2$s more like this.</string>
     <string name="who_likes">%s likes this.</string>
     
-    <string name="loading_comments_1">Loading comments |</string>
-    <string name="loading_comments_2">Loading comments /</string>
-    <string name="loading_comments_3">Loading comments &#8212;</string>
-    <string name="loading_comments_4">Loading comments \</string>
+    <string name="loading_comments_1">Loading comments</string>
     
     <string name="load_stream_failed">Failed to load the feed</string>
     <string name="load_comments_failed">Failed to load comments</string>
@@ -48,6 +45,7 @@
 	<string name="send_location">Attach location</string>
 	<string name="confirm_logout">Are you sure?</string>
 	<string name="confirm_share">Do you want to share this note?</string>
+	<string name="not_favorited">Not favorited</string>
 	<string name="trust_and_proceed">Trust anyway and proceed</string>
 	<string name="warning">Warning</string>
     <string name="error">Error</string>
@@ -70,7 +68,9 @@
 	<string name="objecttype_image">an image</string>
 	<string name="objecttype_note">a note</string>
 	<string name="note_shared">Note shared</string>
-	
+	<string name="note_favorited">Note favorited!</string>
+	<string name="note_unfavorited">Note unfavorited</string>
+	<string name="note_favorite_error">Ops.. an error occurred %s..</string>
 	<string name="msg_replies">Replies</string>
 	<string name="msg_likes">Likes</string>
 	<string name="msg_shares">Shares</string>

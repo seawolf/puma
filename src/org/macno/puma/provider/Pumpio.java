@@ -32,11 +32,10 @@ public class Pumpio {
 	private static final String HTTPS = "https://";
 	
 	private static final String WHOAMI_URL = "/api/whoami";
-	private static final String POST_NOTE_URL = "/api/user/%s/feed";
-	private static final String POST_IMAGE_URL = "/api/user/%s/uploads";
-	
-	
+
+	private static final String POST_MAJOR_ACTIVITY_URL = "/api/user/%s/feed";
 	private static final String POST_MINOR_ACTIVITY_URL = "/api/user/%s/feed/minor";
+	private static final String POST_IMAGE_ACTIVITY_URL = "/api/user/%s/uploads";
 	
 	private static final String ACTIVITY_STREAM_URL = "/api/user/%1$s/%2$s";
 	private static final String ACTIVITY_REPLIES_URL = "/api/note/%1$s/replies";
@@ -218,7 +217,7 @@ public class Pumpio {
 	
 	public boolean postImage(String title, String note, boolean isPublicNote, Location location, String mimeType, byte[] data ) {
 		
-		String url = prepareUrl(String.format(POST_IMAGE_URL, mAccount.getUsername()));
+		String url = prepareUrl(String.format(POST_IMAGE_ACTIVITY_URL, mAccount.getUsername()));
 
 		JSONObject response = null;
 		boolean ret = false;
@@ -235,8 +234,9 @@ public class Pumpio {
 				imageObj.put("displayName",title);
 				imageObj.put("content",note);
 				imageObj.put("image",response.get("image"));
-				if(postNote(imageObj,null,null,null,isPublicNote,location,false)) {
-					ret = postNote(imageObj,null,null,null,isPublicNote,location,true);
+				if(postActivity("post",null,imageObj,isPublicNote,location)) {
+//					ret = postNote(imageObj,null,null,null,isPublicNote,location,true);
+					ret = postActivity("update",null,imageObj,isPublicNote,location);
 				}
 			} catch(JSONException e) {
 				
@@ -246,40 +246,40 @@ public class Pumpio {
 		return ret;
 	}
 	
-	public boolean postNote(JSONObject inReplyTo, String note, boolean publicNote, Location location) {
-		return postNote(null,inReplyTo, null, note, publicNote,location, false);
-	}
-	
-	public boolean postNote(JSONObject obj, JSONObject inReplyTo, String title, String note, boolean publicNote, Location location, boolean isUpdate) {
-		
-		boolean isReusingObject = false;
-		if(obj == null) {
-			obj = new JSONObject();
-		} else {
-			isReusingObject = true;
-		}
-		JSONObject act = new JSONObject();
-		
+	public boolean postNote(JSONObject inReplyTo, String note, boolean isPublicNote, Location location) {
+		JSONObject obj = new JSONObject();
 		try {
 			if(inReplyTo == null) {
-				if(!isReusingObject) {
-					obj.put("objectType", "note");				
-				}
+				obj.put("objectType", "note");				
+
 			} else {
 				obj.put("objectType", "comment");
 				obj.put("inReplyTo", inReplyTo);
 			}
-			if(title != null) {
-				obj.put("displayName", title);
-			}
 			if(note != null) {
 				obj.put("content",note);
 			}
+		} catch(JSONException e) {
+			Log.e(APP_NAME,e.getMessage());
+			return false;
+		}
+		return postActivity("post",null,obj ,isPublicNote,location);
+	}
 
+	
+	public boolean postActivity(String feed, String verb,  String content, JSONObject obj, boolean publicNote, Location location) {
+
+		JSONObject act = new JSONObject();
+		
+		try {
 			
 			act.put("generator", getGenerator());
-			act.put("verb", isUpdate ? "update" : "post" );
+			act.put("verb", verb );
+			if(content != null) {
+				act.put("content",content);
+			}
 			act.put("object", obj);
+			
 			if(publicNote) {
 				
 				JSONArray tos = new JSONArray();
@@ -304,7 +304,7 @@ public class Pumpio {
 		} catch(JSONException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 		}
-		String url = prepareUrl(String.format(POST_NOTE_URL, mAccount.getUsername()));
+		String url = prepareUrl(String.format(feed, mAccount.getUsername()));
 		mHttpUtil.setContentType("application/json");
 		try {
 			if(mDebug)
@@ -319,93 +319,30 @@ public class Pumpio {
 			Log.e(APP_NAME,e.getMessage(),e);
 			return false;
 		}
+		
 	}
 	
 	public boolean postMinorActivity(String verb, JSONObject obj , String content, boolean publicNote, Location location) {
 		
-		
-		JSONObject act = new JSONObject();
-		
-		try {
-			
-			act.put("generator", getGenerator());
-			act.put("verb", verb);
-			act.put("content", content);
-			act.put("object", obj);
-			if(publicNote) {
-				
-				JSONArray tos = new JSONArray();
-				JSONObject to = new JSONObject();
-				to.put("objectType", "collection");
-				to.put("id", "http://activityschema.org/collection/public");
-				tos.put(to);
-				act.put("to", tos);
-			}
-			
-			if(location != null) {
-				
-				JSONObject loc = new JSONObject();
-				
-				JSONObject position = new JSONObject();
-				position.put("altitude", location.getAltitude());
-				position.put("latitude", location.getLatitude());
-				position.put("longitude", location.getLongitude());
-				loc.put("position", position);
-				act.put("location", loc);
-			}
-		} catch(JSONException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-		}
-		String url = prepareUrl(String.format(POST_MINOR_ACTIVITY_URL, mAccount.getUsername()));
-		mHttpUtil.setContentType("application/json");
-		try {
-			if(mDebug) {
-				Log.d(APP_NAME, act.toString(3));
-			}
-			JSONObject ret = mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
-			if(mDebug)
-				Log.d(APP_NAME, ret.toString(3));
-			return true;
-		} catch(HttpUtilException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-			return false;
-		}  catch(JSONException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-			return false;
-		}
+		return postActivity(POST_MINOR_ACTIVITY_URL, verb, content, obj, publicNote, location);
+	}
+	
+	public boolean postActivity(String verb, String content, JSONObject obj , boolean publicNote, Location location) {
+		return postActivity(POST_MAJOR_ACTIVITY_URL, verb, content, obj, publicNote, location);
 	}
 	
 	public boolean shareNote(JSONObject obj) {
-		
-		JSONObject act = new JSONObject();
-		
-		try {
-			
-			act.put("generator", getGenerator());
-			act.put("verb", "share");
-			act.put("object", obj);
-			
-		} catch(JSONException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-		}
-		String url = prepareUrl(String.format(POST_NOTE_URL, mAccount.getUsername()));
-		mHttpUtil.setContentType("application/json");
-		try {
-			if(mDebug)
-				Log.d(APP_NAME, act.toString(3));
-			JSONObject ret = mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
-			if(mDebug)
-				Log.d(APP_NAME, ret.toString(3));
-			return true;
-		} catch(HttpUtilException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-			return false;
-		}  catch(JSONException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-			return false;
-		}
+		return postActivity("share", null, obj, false, null);
+	}
+
+	public boolean favoriteNote(JSONObject obj) {
+		return postActivity("favorite", null, obj, false, null);
 	}
 	
+	public boolean unfavoriteNote(JSONObject obj) {
+		return postActivity("unfavorite", null, obj, false, null);
+	}
+
 	private String prepareUrl(String path) {
 		return (mAccount.isSsl() ? HTTPS : HTTP) + mAccount.getNode() + path;  
 	}

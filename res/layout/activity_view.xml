@@ -16,6 +16,54 @@
             android:orientation="vertical" >
         </LinearLayout>
 
+		<LinearLayout
+            android:id="@+id/ll_activity_likes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="6dp" >
+
+            <ImageView
+                android:id="@+id/iv_like"
+                android:layout_weight="0"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/not_favorited"
+                android:onClick="doFavorite"
+                android:contentDescription="@string/not_favorited"
+                />
+            
+            <TextView android:id="@+id/tv_who_like"
+                android:layout_weight="1"
+                android:paddingLeft="6dp"
+                android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+        
+        <LinearLayout
+            android:id="@+id/ll_comments_loading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+                     
+            <ImageView android:id="@+id/iv_loading"
+                android:src="@drawable/loading"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_weight="0"
+                android:contentDescription="@string/loading_comments_1"
+                />
+            
+            <TextView 
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:text="@string/loading_comments_1"/>
+        </LinearLayout>
         <LinearLayout
             android:id="@+id/ll_activity_replies"
             android:layout_width="match_parent"
