@@ -16,7 +16,9 @@ import org.macno.puma.provider.Pumpio;
 import org.macno.puma.util.ActivityUtil;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -258,6 +260,23 @@ public class ViewActivity extends Activity {
 	}
 
 	private void share() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+		.setMessage(R.string.confirm_share)
+		.setCancelable(false)
+		.setPositiveButton(android.R.string.yes,
+				new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface xdialog, int id) {
+				doShare();
+			}
+		})
+		.setNegativeButton(android.R.string.no,null)
+		.create()
+		.show();
+		
+	}
+	
+	private void doShare() {
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {

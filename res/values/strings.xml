@@ -47,6 +47,7 @@
 	<string name="public_post">Public Note</string>
 	<string name="send_location">Attach location</string>
 	<string name="confirm_logout">Are you sure?</string>
+	<string name="confirm_share">Do you want to share this note?</string>
 	<string name="trust_and_proceed">Trust anyway and proceed</string>
 	<string name="warning">Warning</string>
     <string name="error">Error</string>
