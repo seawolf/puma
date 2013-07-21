@@ -57,12 +57,20 @@ public class ActivityUtil {
 	
 	public static String getObjectImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("image");
-		
+		JSONObject pumpIo = imgo.optJSONObject("pump_io");
+		if(pumpIo != null && pumpIo.has("proxyURL")) {
+			// If there's a proxy I use it
+			return pumpIo.optString("proxyURL");
+		}
 		return imgo != null ? imgo.optString("url",null) : null;
 	}
 	public static String getObjectFullImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("fullImage");
-		
+		JSONObject pumpIo = imgo.optJSONObject("pump_io");
+		if(pumpIo != null && pumpIo.has("proxyURL")) {
+			// If there's a proxy I use it
+			return pumpIo.optString("proxyURL");
+		}
 		return imgo != null ? imgo.optString("url",null) : null;
 	}
 	
