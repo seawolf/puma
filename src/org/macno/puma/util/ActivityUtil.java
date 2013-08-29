@@ -60,21 +60,28 @@ public class ActivityUtil {
 	
 	public static String getObjectImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("image");
+		if(imgo == null) {
+			return null;
+		}
 		JSONObject pumpIo = imgo.optJSONObject("pump_io");
 		if(pumpIo != null && pumpIo.has("proxyURL")) {
 			// If there's a proxy I use it
 			return pumpIo.optString("proxyURL");
 		}
-		return imgo != null ? imgo.optString("url",null) : null;
+		return imgo.optString("url",null);
 	}
+	
 	public static String getObjectFullImage(JSONObject obj) {
 		JSONObject imgo = obj.optJSONObject("fullImage");
+		if(imgo == null) {
+			return null;
+		}
 		JSONObject pumpIo = imgo.optJSONObject("pump_io");
 		if(pumpIo != null && pumpIo.has("proxyURL")) {
 			// If there's a proxy I use it
 			return pumpIo.optString("proxyURL");
 		}
-		return imgo != null ? imgo.optString("url",null) : null;
+		return imgo.optString("url",null);
 	}
 	
 	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act) {
