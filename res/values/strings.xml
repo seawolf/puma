@@ -108,5 +108,17 @@
     <string name="compose_link_hint">Hyperlink</string>
     <string name="compose_link_start">[</string>
     <string name="compose_link_finish">](https://)</string>
+    <string name="compose_h1_text">H1</string>
+    <string name="compose_h1_hint">Heading 1</string>
+    <string name="compose_h1_start">#</string>
+    <string name="compose_h1_finish">#</string>
+    <string name="compose_h2_text">H2</string>
+    <string name="compose_h2_hint">Heading 2</string>
+    <string name="compose_h2_start">##</string>
+    <string name="compose_h2_finish">##</string>
+    <string name="compose_h3_text">H3</string>
+    <string name="compose_h3_hint">Heading 3</string>
+    <string name="compose_h3_start">###</string>
+    <string name="compose_h3_finish">###</string>
 
 </resources>

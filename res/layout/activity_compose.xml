@@ -72,7 +72,7 @@
                 android:text="@string/compose_italic_text" />
 
             <Button
-                android:id="@+id/btn_toolbar_underline"
+                android:id="@+id/btn_toolbar_bolditalic"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -88,6 +88,33 @@
                 android:hint="@string/compose_link_hint"
                 android:onClick="markdownHelperLink"
                 android:text="@string/compose_link_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_h1"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_h1_hint"
+                android:onClick="markdownHelperH1"
+                android:text="@string/compose_h1_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_h2"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_h2_hint"
+                android:onClick="markdownHelperH2"
+                android:text="@string/compose_h2_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_h3"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_h3_hint"
+                android:onClick="markdownHelperH3"
+                android:text="@string/compose_h3_text" />
         </LinearLayout>
 
         <EditText

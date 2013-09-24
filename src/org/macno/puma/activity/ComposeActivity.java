@@ -333,6 +333,21 @@ public class ComposeActivity extends Activity {
 				getString(R.string.compose_link_finish));
 	}
 
+	public void markdownHelperH1(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h1_start),
+				getString(R.string.compose_h1_finish));
+	}
+
+	public void markdownHelperH2(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h2_start),
+				getString(R.string.compose_h2_finish));
+	}
+
+	public void markdownHelperH3(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h3_start),
+				getString(R.string.compose_h3_finish));
+	}
+
 	private static class PostHandler extends Handler {
 
 		private final WeakReference<ComposeActivity> mTarget;
