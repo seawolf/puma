@@ -298,7 +298,7 @@ public class ComposeActivity extends Activity {
 		Toast.makeText(this, R.string.post_failed, Toast.LENGTH_SHORT).show();
 	}
 
-	void markdownHelperBold() {
+	public void markdownHelperBold(View v) {
 		mNote = (EditText) findViewById(R.id.note);
 		Editable noteText = mNote.getText();
 		int cursorPos = mNote.getSelectionStart();
@@ -314,7 +314,7 @@ public class ComposeActivity extends Activity {
 				+ getString(R.string.compose_bold_start).length());
 	}
 
-	void markdownHelperItalic() {
+	public void markdownHelperItalic(View v) {
 		mNote = (EditText) findViewById(R.id.note);
 		Editable noteText = mNote.getText();
 		int cursorPos = mNote.getSelectionStart();
@@ -330,7 +330,7 @@ public class ComposeActivity extends Activity {
 				+ getString(R.string.compose_italic_start).length());
 	}
 
-	void markdownHelperUnderline() {
+	public void markdownHelperUnderline(View v) {
 		mNote = (EditText) findViewById(R.id.note);
 		Editable noteText = mNote.getText();
 		int cursorPos = mNote.getSelectionStart();
@@ -346,7 +346,7 @@ public class ComposeActivity extends Activity {
 				+ getString(R.string.compose_underline_start).length());
 	}
 
-	void markdownHelperLink() {
+	public void markdownHelperLink(View v) {
 		mNote = (EditText) findViewById(R.id.note);
 		Editable noteText = mNote.getText();
 		int cursorPos = mNote.getSelectionStart();
