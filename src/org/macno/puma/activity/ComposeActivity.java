@@ -299,19 +299,67 @@ public class ComposeActivity extends Activity {
 	}
 
 	void markdownHelperBold() {
-		//
+		mNote = (EditText) findViewById(R.id.note);
+		Editable noteText = mNote.getText();
+		int cursorPos = mNote.getSelectionStart();
+
+		CharSequence textBefore = noteText.subSequence(0, cursorPos);
+		CharSequence textAfter = noteText.subSequence(cursorPos,
+				noteText.length());
+
+		mNote.setText(textBefore + getString(R.string.compose_bold_start)
+				+ getString(R.string.compose_bold_finish) + textAfter);
+
+		mNote.setSelection(cursorPos
+				+ getString(R.string.compose_bold_start).length());
 	}
 
 	void markdownHelperItalic() {
-		//
+		mNote = (EditText) findViewById(R.id.note);
+		Editable noteText = mNote.getText();
+		int cursorPos = mNote.getSelectionStart();
+
+		CharSequence textBefore = noteText.subSequence(0, cursorPos);
+		CharSequence textAfter = noteText.subSequence(cursorPos,
+				noteText.length());
+
+		mNote.setText(textBefore + getString(R.string.compose_italic_start)
+				+ getString(R.string.compose_italic_finish) + textAfter);
+
+		mNote.setSelection(cursorPos
+				+ getString(R.string.compose_italic_start).length());
 	}
 
 	void markdownHelperUnderline() {
-		//
+		mNote = (EditText) findViewById(R.id.note);
+		Editable noteText = mNote.getText();
+		int cursorPos = mNote.getSelectionStart();
+
+		CharSequence textBefore = noteText.subSequence(0, cursorPos);
+		CharSequence textAfter = noteText.subSequence(cursorPos,
+				noteText.length());
+
+		mNote.setText(textBefore + getString(R.string.compose_underline_start)
+				+ getString(R.string.compose_underline_finish) + textAfter);
+
+		mNote.setSelection(cursorPos
+				+ getString(R.string.compose_underline_start).length());
 	}
 
 	void markdownHelperLink() {
-		//
+		mNote = (EditText) findViewById(R.id.note);
+		Editable noteText = mNote.getText();
+		int cursorPos = mNote.getSelectionStart();
+
+		CharSequence textBefore = noteText.subSequence(0, cursorPos);
+		CharSequence textAfter = noteText.subSequence(cursorPos,
+				noteText.length());
+
+		mNote.setText(textBefore + getString(R.string.compose_link_start)
+				+ getString(R.string.compose_link_finish) + textAfter);
+
+		mNote.setSelection(cursorPos
+				+ getString(R.string.compose_link_start).length());
 	}
 
 	private static class PostHandler extends Handler {
