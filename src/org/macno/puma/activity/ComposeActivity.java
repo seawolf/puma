@@ -38,6 +38,7 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -298,7 +299,7 @@ public class ComposeActivity extends Activity {
 		Toast.makeText(this, R.string.post_failed, Toast.LENGTH_SHORT).show();
 	}
 
-	public void markdownHelperBold(View v) {
+	private void insertMarkdownHelper(String startText, String endText) {
 		mNote = (EditText) findViewById(R.id.note);
 		Editable noteText = mNote.getText();
 		int cursorPos = mNote.getSelectionStart();
@@ -307,59 +308,29 @@ public class ComposeActivity extends Activity {
 		CharSequence textAfter = noteText.subSequence(cursorPos,
 				noteText.length());
 
-		mNote.setText(textBefore + getString(R.string.compose_bold_start)
-				+ getString(R.string.compose_bold_finish) + textAfter);
+		mNote.setText(textBefore + startText + endText + textAfter);
 
-		mNote.setSelection(cursorPos
-				+ getString(R.string.compose_bold_start).length());
+		mNote.setSelection(cursorPos + startText.length());
+	}
+
+	public void markdownHelperBold(View v) {
+		insertMarkdownHelper(getString(R.string.compose_bold_start),
+				getString(R.string.compose_bold_finish));
 	}
 
 	public void markdownHelperItalic(View v) {
-		mNote = (EditText) findViewById(R.id.note);
-		Editable noteText = mNote.getText();
-		int cursorPos = mNote.getSelectionStart();
-
-		CharSequence textBefore = noteText.subSequence(0, cursorPos);
-		CharSequence textAfter = noteText.subSequence(cursorPos,
-				noteText.length());
-
-		mNote.setText(textBefore + getString(R.string.compose_italic_start)
-				+ getString(R.string.compose_italic_finish) + textAfter);
-
-		mNote.setSelection(cursorPos
-				+ getString(R.string.compose_italic_start).length());
+		insertMarkdownHelper(getString(R.string.compose_italic_start),
+				getString(R.string.compose_italic_finish));
 	}
 
 	public void markdownHelperUnderline(View v) {
-		mNote = (EditText) findViewById(R.id.note);
-		Editable noteText = mNote.getText();
-		int cursorPos = mNote.getSelectionStart();
-
-		CharSequence textBefore = noteText.subSequence(0, cursorPos);
-		CharSequence textAfter = noteText.subSequence(cursorPos,
-				noteText.length());
-
-		mNote.setText(textBefore + getString(R.string.compose_underline_start)
-				+ getString(R.string.compose_underline_finish) + textAfter);
-
-		mNote.setSelection(cursorPos
-				+ getString(R.string.compose_underline_start).length());
+		insertMarkdownHelper(getString(R.string.compose_underline_start),
+				getString(R.string.compose_underline_finish));
 	}
 
 	public void markdownHelperLink(View v) {
-		mNote = (EditText) findViewById(R.id.note);
-		Editable noteText = mNote.getText();
-		int cursorPos = mNote.getSelectionStart();
-
-		CharSequence textBefore = noteText.subSequence(0, cursorPos);
-		CharSequence textAfter = noteText.subSequence(cursorPos,
-				noteText.length());
-
-		mNote.setText(textBefore + getString(R.string.compose_link_start)
-				+ getString(R.string.compose_link_finish) + textAfter);
-
-		mNote.setSelection(cursorPos
-				+ getString(R.string.compose_link_start).length());
+		insertMarkdownHelper(getString(R.string.compose_link_start),
+				getString(R.string.compose_link_finish));
 	}
 
 	private static class PostHandler extends Handler {
