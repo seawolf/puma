@@ -289,13 +289,29 @@ public class ComposeActivity extends Activity {
 			setFileFromUri(uri);
 		}
 	}
-
+    
 	private void postComplete() {
 		broadcastIntentReload();
 	}
 
 	private void postFailed() {
 		Toast.makeText(this, R.string.post_failed, Toast.LENGTH_SHORT).show();
+	}
+
+	void markdownHelperBold() {
+		//
+	}
+
+	void markdownHelperItalic() {
+		//
+	}
+
+	void markdownHelperUnderline() {
+		//
+	}
+
+	void markdownHelperLink() {
+		//
 	}
 
 	private static class PostHandler extends Handler {
