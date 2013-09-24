@@ -106,7 +106,7 @@
     <string name="compose_bolditalic_finish">***</string>
     <string name="compose_link_text">~</string>
     <string name="compose_link_hint">Hyperlink</string>
-    <string name="compose_link_start">(</string>
-    <string name="compose_link_finish">)[https://]</string>
+    <string name="compose_link_start">[</string>
+    <string name="compose_link_finish">](https://)</string>
 
 </resources>
