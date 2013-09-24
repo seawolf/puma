@@ -100,10 +100,10 @@
     <string name="compose_italic_hint">Italic</string>
     <string name="compose_italic_start">*</string>
     <string name="compose_italic_finish">*</string>
-    <string name="compose_underline_text">U</string>
-    <string name="compose_underline_hint">Underline</string>
-    <string name="compose_underline_start">_</string>
-    <string name="compose_underline_finish">_</string>
+    <string name="compose_bolditalic_text">BI</string>
+    <string name="compose_bolditalic_hint">Bold Italic</string>
+    <string name="compose_bolditalic_start">***</string>
+    <string name="compose_bolditalic_finish">***</string>
     <string name="compose_link_text">~</string>
     <string name="compose_link_hint">Hyperlink</string>
     <string name="compose_link_start">(</string>

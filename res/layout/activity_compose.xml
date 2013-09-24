@@ -76,9 +76,9 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="@string/compose_underline_hint"
-                android:onClick="markdownHelperUnderline()"
-                android:text="@string/compose_underline_text" />
+                android:hint="@string/compose_bolditalic_hint"
+                android:onClick="markdownHelperBoldItalic"
+                android:text="@string/compose_bolditalic_text" />
 
             <Button
                 android:id="@+id/btn_toolbar_link"

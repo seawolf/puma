@@ -323,9 +323,9 @@ public class ComposeActivity extends Activity {
 				getString(R.string.compose_italic_finish));
 	}
 
-	public void markdownHelperUnderline(View v) {
-		insertMarkdownHelper(getString(R.string.compose_underline_start),
-				getString(R.string.compose_underline_finish));
+	public void markdownHelperBoldItalic(View v) {
+		insertMarkdownHelper(getString(R.string.compose_bolditalic_start),
+				getString(R.string.compose_bolditalic_finish));
 	}
 
 	public void markdownHelperLink(View v) {
