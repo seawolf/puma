@@ -45,7 +45,47 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                  />
         </LinearLayout>
-        
+
+        <LinearLayout
+            android:id="@+id/ll_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_toolbar_bold"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_bold_hint"
+                android:text="@string/compose_bold_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_italic"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_italic_hint"
+                android:text="@string/compose_italic_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_underline"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_underline_hint"
+                android:text="@string/compose_underline_text" />
+
+            <Button
+                android:id="@+id/btn_toolbar_link"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/compose_link_hint"
+                android:text="@string/compose_link_text" />
+        </LinearLayout>
+
         <EditText
             android:id="@+id/note"
             android:layout_width="match_parent"
