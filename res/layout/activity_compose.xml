@@ -59,7 +59,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/compose_bold_hint"
-                android:onClick="markdownHelperBold()"
+                android:onClick="markdownHelperBold"
                 android:text="@string/compose_bold_text" />
 
             <Button
@@ -68,7 +68,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/compose_italic_hint"
-                android:onClick="markdownHelperItalic()"
+                android:onClick="markdownHelperItalic"
                 android:text="@string/compose_italic_text" />
 
             <Button
@@ -86,7 +86,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/compose_link_hint"
-                android:onClick="markdownHelperLink()"
+                android:onClick="markdownHelperLink"
                 android:text="@string/compose_link_text" />
         </LinearLayout>
 
