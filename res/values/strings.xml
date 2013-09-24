@@ -90,7 +90,6 @@
 	<string name="months_ago">"about %1$s months ago"</string>
 	<string name="one_year_ago">"about a year ago"</string>
 	
-</resources>
 
     <!-- Markdown helpers -->
     <string name="compose_bold_text">B</string>
