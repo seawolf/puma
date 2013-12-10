@@ -13,4 +13,11 @@
 		android:showAsAction="always"
         android:icon="@drawable/social_forward"
 	/>
+    <item
+		android:id="@+id/action_delete"
+		android:title="@string/action_delete"
+		android:showAsAction="always"
+        android:icon="@drawable/content_discard"
+        android:visible="false"
+	/>
 </menu>

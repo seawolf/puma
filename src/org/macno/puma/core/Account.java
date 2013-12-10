@@ -88,6 +88,10 @@ public class Account {
 	public void setNode(String node) {
 		this.node = node;
 	}
+	
+	public String getAcctId() {
+		return "acct:"+username+"@"+node;
+	}
 
 	public static Account fromJSON(JSONObject o) {
 		Account account = new Account();

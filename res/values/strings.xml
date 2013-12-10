@@ -9,6 +9,7 @@
     <string name="action_share">Share</string>
     <string name="action_reply">Reply</string>
     <string name="action_compose">Compose</string>
+    <string name="action_delete">Delete</string>
     <string name="action_add_account">Add account</string>
     <string name="action_post">Publish</string>
     <string name="select_file">Choose file</string>
@@ -45,6 +46,7 @@
 	<string name="send_location">Attach location</string>
 	<string name="confirm_logout">Are you sure?</string>
 	<string name="confirm_share">Do you want to share this note?</string>
+	<string name="confirm_delete">Do you want to delete this note?</string>
 	<string name="not_favorited">Not favorited</string>
 	<string name="trust_and_proceed">Trust anyway and proceed</string>
 	<string name="warning">Warning</string>
@@ -68,6 +70,7 @@
 	<string name="objecttype_image">an image</string>
 	<string name="objecttype_note">a note</string>
 	<string name="note_shared">Note shared</string>
+	<string name="note_deleted">Note deleted</string>
 	<string name="note_favorited">Note favorited!</string>
 	<string name="note_unfavorited">Note unfavorited</string>
 	<string name="note_favorite_error">Ops.. an error occurred %s..</string>

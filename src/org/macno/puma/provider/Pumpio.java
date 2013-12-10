@@ -266,7 +266,6 @@ public class Pumpio {
 		return postActivity("post",null,obj ,isPublicNote,location);
 	}
 
-	
 	public boolean postActivity(String feed, String verb,  String content, JSONObject obj, boolean publicNote, Location location) {
 
 		JSONObject act = new JSONObject();
@@ -335,6 +334,9 @@ public class Pumpio {
 		return postActivity("share", null, obj, false, null);
 	}
 
+	public boolean deleteNote(JSONObject obj) {
+		return postActivity("delete", null, obj, false, null);
+	}
 	public boolean favoriteNote(JSONObject obj) {
 		return postActivity("favorite", null, obj, false, null);
 	}

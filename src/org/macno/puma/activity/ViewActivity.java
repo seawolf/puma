@@ -59,6 +59,8 @@ public class ViewActivity extends Activity {
 	
 	private ImageView mLoadingComments;
 	
+	private boolean mOwnActivity = false;
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,8 +96,15 @@ public class ViewActivity extends Activity {
         	
         }
         
+        
         mRotationAnimation = AnimationUtils.loadAnimation(this, R.anim.rotate);
         
+        JSONObject actor = ActivityUtil.getActor(mActivity);
+        String acctId = actor.optString("id");
+        
+        if(acctId != null) {
+        	mOwnActivity = acctId.equals(mAccount.getAcctId());
+        }
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
         ll_parent.addView(ActivityUtil.getViewActivity(mPumpio, mActivity,false, true));
 
@@ -281,6 +290,11 @@ public class ViewActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.view, menu);
+		
+		if(mOwnActivity) {
+			menu.findItem(R.id.action_delete).setVisible(true);
+		}
+		
 		return true;
 	}
 
@@ -293,7 +307,9 @@ public class ViewActivity extends Activity {
 		case R.id.action_share:
 			share();
 			return true;
-			
+		case R.id.action_delete:
+			delete();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -330,6 +346,40 @@ public class ViewActivity extends Activity {
 		new Thread(runnable).start();
 		finish();
 	}
+	
+
+	private void delete() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+		.setMessage(R.string.confirm_delete)
+		.setCancelable(false)
+		.setPositiveButton(android.R.string.yes,
+				new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface xdialog, int id) {
+				doDelete();
+			}
+		})
+		.setNegativeButton(android.R.string.no,null)
+		.create()
+		.show();
+		
+	}
+	
+	private void doDelete() {
+		Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				Pumpio pumpio = new Pumpio(mContext);
+				pumpio.setAccount(mAccount);
+				JSONObject target = ActivityUtil.getMinimumObject(mActivity.optJSONObject("object"));
+				pumpio.deleteNote(target);
+				mHandler.sendDeleteComplete();
+			}
+		};
+		new Thread(runnable).start();
+		
+	}
+	
 	
 	private void reloadComments() {
 //		setProgressBarIndeterminateVisibility(false);
@@ -393,6 +443,11 @@ public class ViewActivity extends Activity {
 		Toast.makeText(mContext, getString(R.string.note_shared), Toast.LENGTH_SHORT).show();
 	}
 	
+	private void onDeletedNote() {
+		Toast.makeText(mContext, getString(R.string.note_deleted), Toast.LENGTH_SHORT).show();
+		finish();
+	}
+	
 	private void notifyLoadCommentsFailed() {
 		//setProgressBarIndeterminateVisibility(false);
 		if(mLoadingComments != null) {
@@ -423,6 +478,7 @@ public class ViewActivity extends Activity {
     	private static final int MSG_UNFAV_OK = 5;
     	private static final int MSG_FAV_ERROR = 6;
     	private static final int MSG_LOAD_COMMENTS_EMPTY = 7;
+    	private static final int MSG_DELETE_OK = 8;
     	
     	PostHandler(ViewActivity target) {
 			mTarget = new WeakReference<ViewActivity>(target);
@@ -459,13 +515,18 @@ public class ViewActivity extends Activity {
 			case MSG_LOAD_COMMENTS_FAILED:
 				target.notifyLoadCommentsFailed();
 				break;
-				
+			case MSG_DELETE_OK:
+				target.onDeletedNote();
+				break;
 	    	
 			}
 			
 
 		}
     	
+    	void sendDeleteComplete() {
+    		sendEmptyMessage(MSG_DELETE_OK);
+    	}
     	void sendShareComplete() {
     		sendEmptyMessage(MSG_SHARE_OK);
     	}

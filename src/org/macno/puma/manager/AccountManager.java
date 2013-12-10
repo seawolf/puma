@@ -49,6 +49,7 @@ public class AccountManager {
 		if (json == null) {
 			return null;
 		}
+		Log.d(APP_NAME,json);
 		Account account = null;
 		try {
 			JSONObject jaccount = new JSONObject(json);
