@@ -22,6 +22,7 @@ import org.macno.puma.util.ActivityUtil;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Messenger;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -99,7 +100,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	}
 		
 	private void openViewActivity(JSONObject act) {
-		ViewActivity.startActivity(mContext, mAccount, act);
+		ViewActivity.startActivity(mContext, mAccount, mFeed, act);
 	}
 	
 	public void checkNewActivities() {
@@ -123,7 +124,13 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 			
 			try {
 				JSONObject act = items.getJSONObject(i);
+				
 				if(act.has("object")) {
+					
+					if(act.optJSONObject("object").has("deleted")) {
+						continue;
+					}
+					
 					add(act);
 				}
 			} catch(JSONException e) {
@@ -232,6 +239,11 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 				try {
 					JSONObject act = mItems.getJSONObject(i);
 					if(act.has("object")) {
+						
+						if(act.optJSONObject("object").has("deleted")) {
+							continue;
+						}
+						
 						String activityId = act.getString("id");
 						if(newer) {
 							checkAndDeleteIfExists(activityId);
@@ -379,5 +391,6 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		
 		
 	}
+
 	
 }
