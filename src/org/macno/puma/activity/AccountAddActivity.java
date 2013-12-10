@@ -87,7 +87,7 @@ public class AccountAddActivity extends Activity {
 		
 		mOAuthView = (WebView)findViewById(R.id.wv_oauth);
 		WebSettings wSettings = mOAuthView.getSettings();
-		wSettings.setSavePassword(false);
+		
 		wSettings.setSaveFormData(false);
 		wSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 		mOAuthView.setWebViewClient(new OAuthWebListener());
@@ -173,8 +173,7 @@ public class AccountAddActivity extends Activity {
 				
 				try {
 				
-					mOAuthView.clearView();
-			    	mOAuthView.invalidate();
+					mHandler.clearOAuthView();
 					
 					mOauthManager.prepareConsumerForHost(mHost);
 					
@@ -248,6 +247,7 @@ public class AccountAddActivity extends Activity {
 		static final int MSG_ERROR_OAUTH = 1;
 		static final int MSG_LOGGED_IN = 2;
 		static final int MSG_ERROR_SSL = 3;
+		static final int MSG_CLEAR_OATHVIEW = 4;
 		
 		LoginHandler(AccountAddActivity target) {
 			mTarget = new WeakReference<AccountAddActivity>(target);
@@ -272,6 +272,10 @@ public class AccountAddActivity extends Activity {
 				
 			case MSG_LOGGED_IN:
 				target.loginComplete();
+				break;
+				
+			case MSG_CLEAR_OATHVIEW:
+				target.clearOAuthView();
 				break;
 			}
 		}
@@ -306,6 +310,14 @@ public class AccountAddActivity extends Activity {
 		void loginComplete() {
 			sendEmptyMessage(MSG_LOGGED_IN);
 		}
+		
+		void clearOAuthView() {
+			sendEmptyMessage(MSG_CLEAR_OATHVIEW);
+		}
+	}
+	
+	private void clearOAuthView() {
+    	mOAuthView.invalidate();
 	}
 	
 	private class OAuthWebListener extends WebViewClient {
