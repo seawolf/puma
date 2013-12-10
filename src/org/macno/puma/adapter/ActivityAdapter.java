@@ -18,8 +18,8 @@ import org.macno.puma.core.Account;
 import org.macno.puma.manager.ActivityManager;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.util.ActivityUtil;
-import org.macno.puma.util.DateUtils;
 
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
@@ -34,6 +34,9 @@ import android.widget.Toast;
 
 public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListView.OnScrollListener {
 
+	private static final String K_FEED_SETTINGS = "feedsSettings";
+	private static final String K_FEED_LAST_CHECK = "feedsLastcheck";
+	
 	private String mFeed;
 	private String mFeedHash;
 	private FragmentActivity mContext;
@@ -46,6 +49,7 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	private Pumpio mPumpio;
 	ActivityManager mActivityManager;
 	private boolean mLoading = false;
+	private SharedPreferences mSettings;
 	
 	public ActivityAdapter(FragmentActivity context, Account account, String feed) {
 		super(context,0,new ArrayList<JSONObject>());
@@ -57,13 +61,12 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 		mFeedHash = mPumpio.getStreamHash(mFeed);
 		mActivityManager = new ActivityManager(mContext);
 		loadCache();
+		mSettings = context.getSharedPreferences(K_FEED_SETTINGS, 0);
 		if(getCount()==0) {
 			loadStreams();
 		} else {
-			JSONObject last = getItem(0);
-			String s_published = ActivityUtil.getPublished(last);
-			try {
-				Date published = DateUtils.parseRFC3339Date(s_published);
+			try {				
+				Date published = new Date(mSettings.getLong(K_FEED_LAST_CHECK, 0));
 				Date now = new Date();
 				if ( (now.getTime() - published.getTime()) >  ( 60 * 60 *1000) ) {
 					clearCache();
@@ -218,6 +221,8 @@ public class ActivityAdapter extends ArrayAdapter<JSONObject> implements ListVie
 	
 	private void reloadAdapter(boolean newer) {
 		
+		SharedPreferences.Editor editor = mSettings.edit();
+		editor.putLong( K_FEED_LAST_CHECK, (new Date()).getTime()).commit();
 		mLoading=false;
 		mContext.setProgressBarIndeterminateVisibility(false);
 		if(mItems != null) {
