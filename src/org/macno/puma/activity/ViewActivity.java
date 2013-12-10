@@ -1,6 +1,7 @@
 package org.macno.puma.activity;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
+import static org.macno.puma.activity.HomeActivity.ACTION_ACTIVITY_DELETED;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,14 +42,17 @@ import android.widget.Toast;
 public class ViewActivity extends Activity {
 
 	public static final String EXTRA_ACTIVITY = "extraActivity";
+	public static final String EXTRA_FEED = "extraFeed";
 	public static final String EXTRA_ACCOUNT_UUID = "extraAccountUUID";
 	
 	private Account mAccount;
 	private JSONObject mActivity;
+	private String mFeed;
+	
 	private Context mContext;
 	
 	private PostHandler mHandler = new PostHandler(this);
-	
+		
 	private boolean mLoading = false;
 	
 	private JSONArray mComments;
@@ -76,9 +81,11 @@ public class ViewActivity extends Activity {
 		if (savedInstanceState != null) {
 			accountUUID = savedInstanceState.getString(EXTRA_ACCOUNT_UUID);
 			activity = savedInstanceState.getString(EXTRA_ACTIVITY);
+			mFeed = savedInstanceState.getString(EXTRA_FEED);
 		} else if (extras != null) {
 			accountUUID = extras.getString(EXTRA_ACCOUNT_UUID);
 			activity = extras.getString(EXTRA_ACTIVITY);
+			mFeed = extras.getString(EXTRA_FEED);
 		}
 		AccountManager am = new AccountManager(this);
 		mAccount = am.getAccount(accountUUID);
@@ -118,9 +125,15 @@ public class ViewActivity extends Activity {
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putString(EXTRA_ACTIVITY, mActivity.toString());
 		outState.putString(EXTRA_ACCOUNT_UUID, mAccount.getUuid());
+		outState.putString(EXTRA_FEED, mFeed);
 		super.onSaveInstanceState(outState);
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
+	
 	private void addComments() {
 		JSONObject obj = mActivity.optJSONObject("object");
 		if(obj == null) {
@@ -371,13 +384,18 @@ public class ViewActivity extends Activity {
 			public void run() {
 				Pumpio pumpio = new Pumpio(mContext);
 				pumpio.setAccount(mAccount);
-				JSONObject target = ActivityUtil.getMinimumObject(mActivity.optJSONObject("object"));
+				JSONObject act = mActivity.optJSONObject("object");
+				JSONObject target = ActivityUtil.getMinimumObject(act);
 				pumpio.deleteNote(target);
+				
+//				ActivityManager activityManager = new ActivityManager(mContext);
+//				activityManager.deleteActivity(mFeed, act);
+				
 				mHandler.sendDeleteComplete();
 			}
 		};
 		new Thread(runnable).start();
-		
+		finish();
 	}
 	
 	
@@ -444,8 +462,7 @@ public class ViewActivity extends Activity {
 	}
 	
 	private void onDeletedNote() {
-		Toast.makeText(mContext, getString(R.string.note_deleted), Toast.LENGTH_SHORT).show();
-		finish();
+		broadcastIntentReload();
 	}
 	
 	private void notifyLoadCommentsFailed() {
@@ -574,11 +591,17 @@ public class ViewActivity extends Activity {
 		ComposeActivity.startActivity(mContext,mAccount,mActivity.optJSONObject("object").toString(), ComposeActivity.ACTION_REPLY );
 	}
 	
-	public static void startActivity(Context context,Account account, JSONObject activity) {
+	public static void startActivity(Context context,Account account, String feed, JSONObject activity) {
 		Intent viewActivityIntent = new Intent(context,ViewActivity.class);
 		viewActivityIntent.putExtra(ViewActivity.EXTRA_ACTIVITY, activity.toString());
+		viewActivityIntent.putExtra(ViewActivity.EXTRA_FEED, feed);
 		viewActivityIntent.putExtra(ViewActivity.EXTRA_ACCOUNT_UUID, account.getUuid());
 		context.startActivity(viewActivityIntent);
 	}
+	
+	private void broadcastIntentReload() {
+        Intent intent = new Intent(ACTION_ACTIVITY_DELETED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
 }

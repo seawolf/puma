@@ -1,22 +1,32 @@
 package org.macno.puma.activity;
 
+import static org.macno.puma.PumaApplication.APP_NAME;
+
 import org.macno.puma.R;
 import org.macno.puma.adapter.StreamPageAdapter;
 import org.macno.puma.core.Account;
 import org.macno.puma.manager.AccountManager;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.Toast;
 
 public class HomeActivity extends FragmentActivity {
+
+	public static final String ACTION_ACTIVITY_DELETED = "org.macno.puma.ActivityDeleted";
+	public static final String ACTION_ACTIVITY_POSTED = "org.macno.puma.ActivityPosted";
 
 	public static final String EXTRA_ACCOUNT_UUID = "extraAccountUUID";
 
@@ -25,6 +35,7 @@ public class HomeActivity extends FragmentActivity {
 	private StreamPageAdapter mAdapter;
 
 	private ViewPager mPager;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +54,7 @@ public class HomeActivity extends FragmentActivity {
 		} else if (extras != null) {
 			accountUUID = extras.getString(EXTRA_ACCOUNT_UUID);
 		}
+		
 		AccountManager am = new AccountManager(this);
 		mAccount = am.getAccount(accountUUID);
 
@@ -56,6 +68,49 @@ public class HomeActivity extends FragmentActivity {
 		mAdapter = new StreamPageAdapter(this,mAccount);
 		mPager.setAdapter(mAdapter);
 
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		// Register mMessageReceiver to receive messages.
+		LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+		localBroadcastManager.registerReceiver(mMessageReceiver,
+				new IntentFilter(ACTION_ACTIVITY_DELETED));
+		localBroadcastManager.registerReceiver(mMessageReceiver,
+				new IntentFilter(ACTION_ACTIVITY_POSTED));
+	}
+
+	@Override
+	protected void onPause() {
+		// Unregister since the activity is not visible
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+		super.onPause();
+	} 
+
+	// handler for received Intents for the "my-event" event 
+	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if(ACTION_ACTIVITY_DELETED.equals(action)) {
+				Toast.makeText(context, context.getString(R.string.note_deleted), Toast.LENGTH_SHORT).show();
+				mAdapter.clearCache(mPager.getCurrentItem());
+			} else if (ACTION_ACTIVITY_POSTED.equals(action)) {
+				Toast.makeText(context, context.getString(R.string.post_complete), Toast.LENGTH_SHORT).show();
+		    	mAdapter.refreshAdapter(mPager.getCurrentItem());
+			} else {
+				Log.e(APP_NAME,"PumaReceiver with unkown action: " + action);
+			}
+		}
+	};
+
+
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 	}
 
 	@Override
@@ -142,5 +197,5 @@ public class HomeActivity extends FragmentActivity {
 		context.startActivity(homeIntent);
 
 	}
-
+	
 }

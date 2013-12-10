@@ -2,6 +2,7 @@ package org.macno.puma.activity;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
 import static org.macno.puma.PumaApplication.K_PUMA_SETTINGS;
+import static org.macno.puma.activity.HomeActivity.ACTION_ACTIVITY_POSTED;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,6 +37,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -289,7 +291,7 @@ public class ComposeActivity extends Activity {
 	}
     
     private void postComplete() {
-    	Toast.makeText(this, R.string.post_complete, Toast.LENGTH_SHORT).show();
+    	broadcastIntentReload();
     }
     
     private void postFailed() {
@@ -521,5 +523,10 @@ public class ComposeActivity extends Activity {
 		Intent homeIntent = new Intent(context,ComposeActivity.class);
 		context.startActivity(homeIntent);
 	}
+	
+	private void broadcastIntentReload() {
+        Intent intent = new Intent(ACTION_ACTIVITY_POSTED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
 }
