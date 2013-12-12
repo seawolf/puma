@@ -22,7 +22,6 @@ import org.macno.puma.util.ActivityUtil;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Messenger;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
