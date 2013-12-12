@@ -42,12 +42,7 @@ public class ActivityUtil {
 	}
 	
 	public static String getImageUrl(JSONObject image) {
-		
-		if(image.has("image")) {
-			return image.optJSONObject("image").optString("url");
-		}
-		
-		return null;
+		return getObjectImage(image);
 	}
 	
 	public static String getPublished(JSONObject act) {
@@ -309,16 +304,23 @@ public class ActivityUtil {
 		
 		JSONObject actor = item.optJSONObject("author");
 		if(actor != null ) {
+			
+			String actorName = ActivityUtil.getActorBestName(actor);
+			TextView sender = (TextView)view.findViewById(R.id.tv_sender);
+			sender.setText(actorName);
+			
 			RemoteImageView rim = (RemoteImageView)view.findViewById(R.id.riv_sender);
 			String avatar = ActivityUtil.getImageUrl(actor);
 			if(avatar == null) {
 				avatar = "http://macno.org/images/unkown.png";
 			}
+//			Log.d(APP_NAME,"Loading image for " + actorName + " = " + avatar );
+//			if(actorName.equals("macno")) {
+//				Log.d(APP_NAME,actor.toString());
+//			}
 			rim.setRemoteURI(pumpio.getHttpUtil(), avatar);
 			rim.loadImage();
 			
-			TextView sender = (TextView)view.findViewById(R.id.tv_sender);
-			sender.setText(ActivityUtil.getActorBestName(actor));
 		}
 		
 		TextView published = (TextView)view.findViewById(R.id.tv_published);

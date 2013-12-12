@@ -2,6 +2,7 @@ package org.macno.puma.activity;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
 import static org.macno.puma.activity.HomeActivity.ACTION_ACTIVITY_DELETED;
+import static org.macno.puma.activity.HomeActivity.ACTION_ACTIVITY_POSTED;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -19,9 +20,11 @@ import org.macno.puma.util.ActivityUtil;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -142,13 +145,14 @@ public class ViewActivity extends Activity {
 		JSONObject replies = obj.optJSONObject("replies");
 		
 		if(replies != null) {
+			//debugReplies(replies);
 			LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			
 			JSONArray items = replies.optJSONArray("items");
 			if(items != null) {
+				
 				int totalItems = replies.optInt("totalItems", 0);
 				if(totalItems > items.length()) {
-					
 					JSONObject pumpIo = replies.optJSONObject("pump_io");
 					if(pumpIo != null && pumpIo.has("proxyURL")) {
 						// If there's a proxy I use it
@@ -157,11 +161,12 @@ public class ViewActivity extends Activity {
 						loadComments(replies.optString("url"));
 					}
 					addLoadingCommentsText();
-				}
-				for(int i=items.length()-1;i>=0;i--) {
-					LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, items.optJSONObject(i), (i % 2 == 0),this);
-					if(view != null) {
-						ll_comments.addView(view);
+				} else {
+					for(int i=items.length()-1;i>=0;i--) {
+						LinearLayout view = ActivityUtil.getViewComment(mPumpio, inflater, items.optJSONObject(i), (i % 2 == 0),this);
+						if(view != null) {
+							ll_comments.addView(view);
+						}
 					}
 				}
 			}
@@ -211,6 +216,7 @@ public class ViewActivity extends Activity {
 
 					mHandler.sendReloadComments();
 				} catch(SSLException e) {
+					Log.e(APP_NAME,e.getMessage(),e);
 					mHandler.sendLoadCommentsFailed();
 				}
 			}
@@ -398,6 +404,50 @@ public class ViewActivity extends Activity {
 		finish();
 	}
 	
+	// handler for received Intents for the "my-event" event 
+	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+			if (ACTION_ACTIVITY_POSTED.equals(action)) {
+				Toast.makeText(context, context.getString(R.string.post_complete), Toast.LENGTH_SHORT).show();
+				JSONObject obj = mActivity.optJSONObject("object");
+				if(obj == null) {
+					return;
+				}
+				JSONObject replies = obj.optJSONObject("replies");
+				JSONObject pumpIo = replies.optJSONObject("pump_io");
+				if(pumpIo != null && pumpIo.has("proxyURL")) {
+					// If there's a proxy I use it
+					loadComments(pumpIo.optString("proxyURL"));
+				} else {
+					loadComments(replies.optString("url"));
+				}
+				addLoadingCommentsText();
+			} else {
+				Log.e(APP_NAME,"PumaReceiver with unkown action: " + action);
+			}
+		}
+	};
+
+		
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		// Register mMessageReceiver to receive messages.
+		LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
+		
+		localBroadcastManager.registerReceiver(mMessageReceiver,
+				new IntentFilter(ACTION_ACTIVITY_POSTED));
+	}
+
+	@Override
+	protected void onPause() {
+		// Unregister since the activity is not visible
+		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+		super.onPause();
+	} 
 	
 	private void reloadComments() {
 //		setProgressBarIndeterminateVisibility(false);
