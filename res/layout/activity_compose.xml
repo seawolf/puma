@@ -54,70 +54,91 @@
             <LinearLayout
                 android:id="@+id/ll_toolbar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:gravity="left|center_vertical" >
 
                 <Button
                     android:id="@+id/btn_toolbar_bold"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_bold_hint"
                     android:onClick="markdownHelperBold"
-                    android:text="@string/compose_bold_text" />
+                    android:text="@string/compose_bold_text"
+                    android:textStyle="bold"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_italic"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_italic_hint"
                     android:onClick="markdownHelperItalic"
-                    android:text="@string/compose_italic_text" />
+                    android:text="@string/compose_italic_text"
+                    android:textStyle="italic"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_bolditalic"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_bolditalic_hint"
                     android:onClick="markdownHelperBoldItalic"
-                    android:text="@string/compose_bolditalic_text" />
+                    android:text="@string/compose_bolditalic_text"
+                    android:textStyle="bold|italic"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_link"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_link_hint"
                     android:onClick="markdownHelperLink"
-                    android:text="@string/compose_link_text" />
+                    android:text="@string/compose_link_text"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_h1"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_h1_hint"
                     android:onClick="markdownHelperH1"
-                    android:text="@string/compose_h1_text" />
+                    android:text="@string/compose_h1_text"
+                    android:textSize="24sp"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_h2"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_h2_hint"
                     android:onClick="markdownHelperH2"
-                    android:text="@string/compose_h2_text" />
+                    android:text="@string/compose_h2_text"
+                    android:textSize="20sp"
+                    android:width="100dip" />
 
                 <Button
                     android:id="@+id/btn_toolbar_h3"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:height="10dip"
                     android:hint="@string/compose_h3_hint"
                     android:onClick="markdownHelperH3"
-                    android:text="@string/compose_h3_text" />
+                    android:text="@string/compose_h3_text"
+                    android:textSize="16sp"
+                    android:width="100dip" />
             </LinearLayout>
         </HorizontalScrollView>
 
