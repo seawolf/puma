@@ -310,7 +310,7 @@ public class ComposeActivity extends Activity {
 				noteText.length());
 
 		// start a new line if needed
-		if (newline == true) {
+		if (newline == true && cursorPos > 0) {
 			textBefore = textBefore + "\n";
 			cursorPos += 1;
 		}
