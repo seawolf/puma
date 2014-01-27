@@ -105,6 +105,17 @@
                     android:width="100dip" />
 
                 <Button
+                    android:id="@+id/btn_toolbar_image"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="10dip"
+                    android:hint="@string/compose_image_hint"
+                    android:onClick="markdownHelperImage"
+                    android:text="@string/compose_image_text"
+                    android:width="100dip" />
+
+                <Button
                     android:id="@+id/btn_toolbar_h1"
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="wrap_content"
@@ -137,6 +148,57 @@
                     android:hint="@string/compose_h3_hint"
                     android:onClick="markdownHelperH3"
                     android:text="@string/compose_h3_text"
+                    android:textSize="16sp"
+                    android:width="100dip" />
+
+                <Button
+                    android:id="@+id/btn_toolbar_list"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="10dip"
+                    android:hint="@string/compose_list_hint"
+                    android:onClick="markdownHelperList"
+                    android:text="@string/compose_list_text"
+                    android:textSize="16sp"
+                    android:width="100dip" />
+
+                <Button
+                    android:id="@+id/btn_toolbar_quote"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="10dip"
+                    android:hint="@string/compose_quote_hint"
+                    android:onClick="markdownHelperQuote"
+                    android:text="@string/compose_quote_text"
+                    android:textSize="16sp"
+                    android:textStyle="italic"
+                    android:typeface="monospace"
+                    android:width="100dip" />
+
+                <Button
+                    android:id="@+id/btn_toolbar_code"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="10dip"
+                    android:hint="@string/compose_code_hint"
+                    android:onClick="markdownHelperCode"
+                    android:text="@string/compose_code_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:width="100dip" />
+
+                <Button
+                    android:id="@+id/btn_toolbar_rule"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="10dip"
+                    android:hint="@string/compose_rule_hint"
+                    android:onClick="markdownHelperRule"
+                    android:text="@string/compose_rule_text"
                     android:textSize="16sp"
                     android:width="100dip" />
             </LinearLayout>

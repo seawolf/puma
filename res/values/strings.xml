@@ -108,6 +108,10 @@
     <string name="compose_link_hint">Hyperlink</string>
     <string name="compose_link_start">[</string>
     <string name="compose_link_finish">](https://)</string>
+    <string name="compose_image_text">[i]</string>
+    <string name="compose_image_hint">Image</string>
+    <string name="compose_image_start">![</string>
+    <string name="compose_image_finish">](https://)</string>
     <string name="compose_h1_text">H1</string>
     <string name="compose_h1_hint">Heading 1</string>
     <string name="compose_h1_start">#</string>
@@ -120,5 +124,21 @@
     <string name="compose_h3_hint">Heading 3</string>
     <string name="compose_h3_start">###</string>
     <string name="compose_h3_finish"></string>
+    <string name="compose_list_text">·</string>
+    <string name="compose_list_hint">Bullet</string>
+    <string name="compose_list_start">*  </string>
+    <string name="compose_list_finish"></string>
+    <string name="compose_quote_text">\"…\"</string>
+    <string name="compose_quote_hint">Quotation</string>
+    <string name="compose_quote_start">&gt;</string>
+    <string name="compose_quote_finish"></string>
+    <string name="compose_code_text">{…}</string>
+    <string name="compose_code_hint">Code</string>
+    <string name="compose_code_start">``</string>
+    <string name="compose_code_finish">``</string>
+    <string name="compose_rule_text">-----</string>
+    <string name="compose_rule_hint">Rule</string>
+    <string name="compose_rule_start">- - -</string>
+    <string name="compose_rule_finish"></string>
 
 </resources>

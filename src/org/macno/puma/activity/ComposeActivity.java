@@ -343,6 +343,11 @@ public class ComposeActivity extends Activity {
 				getString(R.string.compose_link_finish), false, false);
 	}
 
+	public void markdownHelperImage(View v) {
+		insertMarkdownHelper(getString(R.string.compose_image_start),
+				getString(R.string.compose_image_finish), false, false);
+	}
+
 	public void markdownHelperH1(View v) {
 		insertMarkdownHelper(getString(R.string.compose_h1_start),
 				getString(R.string.compose_h1_finish), true, true);
@@ -356,6 +361,26 @@ public class ComposeActivity extends Activity {
 	public void markdownHelperH3(View v) {
 		insertMarkdownHelper(getString(R.string.compose_h3_start),
 				getString(R.string.compose_h3_finish), true, true);
+	}
+
+	public void markdownHelperList(View v) {
+		insertMarkdownHelper(getString(R.string.compose_list_start),
+				getString(R.string.compose_list_finish), true, true);
+	}
+
+	public void markdownHelperQuote(View v) {
+		insertMarkdownHelper(getString(R.string.compose_quote_start),
+				getString(R.string.compose_quote_finish), true, true);
+	}
+
+	public void markdownHelperCode(View v) {
+		insertMarkdownHelper(getString(R.string.compose_code_start),
+				getString(R.string.compose_code_finish), false, false);
+	}
+
+	public void markdownHelperRule(View v) {
+		insertMarkdownHelper(getString(R.string.compose_rule_start),
+				getString(R.string.compose_rule_finish), true, false);
 	}
 
 	private static class PostHandler extends Handler {
