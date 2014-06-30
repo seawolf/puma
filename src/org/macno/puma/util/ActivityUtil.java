@@ -92,6 +92,7 @@ public class ActivityUtil {
 		JSONObject obj = act.optJSONObject("object");
 		JSONObject actor = ActivityUtil.getActor(act);
 		String objectType = obj.optString("objectType");
+		String title = obj.optString("displayName");
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		TextView note = (TextView)view.findViewById(R.id.note);
 		
@@ -99,7 +100,9 @@ public class ActivityUtil {
 		if("post".equals(verb)) {
 			String message="";
 			String what = "";
-			if(objectType.equals("note")) {
+			if(title != null && !title.trim().equals("")) {
+				what = title;
+			} else if(objectType.equals("note")) {
 				what = pumpio.getContext().getString(R.string.objecttype_note);
 			} else if(objectType.equals("comment")) {
 				what = pumpio.getContext().getString(R.string.objecttype_comment);
