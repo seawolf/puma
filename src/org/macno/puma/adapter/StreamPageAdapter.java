@@ -43,6 +43,11 @@ public class StreamPageAdapter extends PagerAdapter {
 		direct.name="Messages";
 		mStreamNames.add(direct);
 
+		Stream minor = new Stream();
+		minor.id="inbox/minor";
+		minor.name="Meanwhile";
+		mStreamNames.add(minor);
+
 		Stream feed = new Stream();
 		feed.id="feed/major";
 		feed.name="Activity";
