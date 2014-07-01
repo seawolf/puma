@@ -38,6 +38,7 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -289,13 +290,97 @@ public class ComposeActivity extends Activity {
 			setFileFromUri(uri);
 		}
 	}
-
+    
 	private void postComplete() {
 		broadcastIntentReload();
 	}
 
 	private void postFailed() {
 		Toast.makeText(this, R.string.post_failed, Toast.LENGTH_SHORT).show();
+	}
+
+	private void insertMarkdownHelper(String startText, String endText,
+			boolean newline, boolean spaceAtStart) {
+		mNote = (EditText) findViewById(R.id.note);
+		Editable noteText = mNote.getText();
+		int cursorPos = mNote.getSelectionStart();
+
+		CharSequence textBefore = noteText.subSequence(0, cursorPos);
+		CharSequence textAfter = noteText.subSequence(cursorPos,
+				noteText.length());
+
+		// start a new line if needed
+		if (newline == true && cursorPos > 0) {
+			textBefore = textBefore + "\n";
+			cursorPos += 1;
+		}
+		// Strings from i18n chomp trailing spaces
+		if (spaceAtStart == true) {
+			startText = startText + " ";
+		}
+
+		mNote.setText(textBefore + startText + endText + textAfter);
+		mNote.setSelection(cursorPos + startText.length());
+	}
+
+	public void markdownHelperBold(View v) {
+		insertMarkdownHelper(getString(R.string.compose_bold_start),
+				getString(R.string.compose_bold_finish), false, false);
+	}
+
+	public void markdownHelperItalic(View v) {
+		insertMarkdownHelper(getString(R.string.compose_italic_start),
+				getString(R.string.compose_italic_finish), false, false);
+	}
+
+	public void markdownHelperBoldItalic(View v) {
+		insertMarkdownHelper(getString(R.string.compose_bolditalic_start),
+				getString(R.string.compose_bolditalic_finish), false, false);
+	}
+
+	public void markdownHelperLink(View v) {
+		insertMarkdownHelper(getString(R.string.compose_link_start),
+				getString(R.string.compose_link_finish), false, false);
+	}
+
+	public void markdownHelperImage(View v) {
+		insertMarkdownHelper(getString(R.string.compose_image_start),
+				getString(R.string.compose_image_finish), false, false);
+	}
+
+	public void markdownHelperH1(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h1_start),
+				getString(R.string.compose_h1_finish), true, true);
+	}
+
+	public void markdownHelperH2(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h2_start),
+				getString(R.string.compose_h2_finish), true, true);
+	}
+
+	public void markdownHelperH3(View v) {
+		insertMarkdownHelper(getString(R.string.compose_h3_start),
+				getString(R.string.compose_h3_finish), true, true);
+	}
+
+	public void markdownHelperList(View v) {
+		insertMarkdownHelper(getString(R.string.compose_list_start),
+				getString(R.string.compose_list_finish), true, true);
+	}
+
+	public void markdownHelperQuote(View v) {
+		insertMarkdownHelper(getString(R.string.compose_quote_start),
+				getString(R.string.compose_quote_finish), true, true);
+	}
+
+	public void markdownHelperCode(View v) {
+		insertMarkdownHelper(getString(R.string.compose_code_start),
+				getString(R.string.compose_code_finish), false, false);
+	}
+
+	public void markdownHelperRule(View v) {
+		insertMarkdownHelper(getString(R.string.compose_rule_start),
+				getString(R.string.compose_rule_finish), true, false);
 	}
 
 	private static class PostHandler extends Handler {
