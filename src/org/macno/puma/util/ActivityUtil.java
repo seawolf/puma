@@ -29,6 +29,12 @@ public class ActivityUtil {
 		JSONObject ret = act.optJSONObject("actor");
 		return ret;
 	}
+
+	public static JSONObject getOriginalActor(JSONObject act) {
+		JSONObject ret = act.optJSONObject("author");
+		return ret;
+	}
+
 	
 	public static String getActorBestName(JSONObject actor) {
 		if(actor != null) {
@@ -89,6 +95,7 @@ public class ActivityUtil {
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.activity_row, null);
 
 		String verb = act.optString("verb");
+		String actContent = ActivityUtil.getContent(act);
 		JSONObject obj = act.optJSONObject("object");
 		JSONObject actor = ActivityUtil.getActor(act);
 		String objectType = obj.optString("objectType");
@@ -183,7 +190,7 @@ public class ActivityUtil {
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
-		} else if ("share".equals(verb)) {
+		} else if ("like".equals(verb)) {
 			String message="";
 			String what = "";
 			if(objectType.equals("note")) {
@@ -195,7 +202,29 @@ public class ActivityUtil {
 			} else {
 				what = "something";
 			}
-			JSONObject originalActor = ActivityUtil.getActor(obj);
+			message = pumpio.getContext().getString(R.string.msg_liked,ActivityUtil.getActorBestName(actor),  what);
+			sender.setText(message);
+			String content = ActivityUtil.getContent(obj);
+			if(content != null)
+				note.setText(Html.fromHtml(content));
+		}else if ("share".equals(verb)) {
+			String message="";
+			String what = "";
+
+			String sharedType = obj.optString("objectType");
+			String sharedTitle = obj.optString("displayName");
+			if(sharedTitle != null && !sharedTitle.trim().equals("")) {
+				what = sharedTitle;
+			} else if(sharedType.equals("note")) {
+				what = pumpio.getContext().getString(R.string.objecttype_note);
+			} else if(sharedType.equals("comment")) {
+				what = pumpio.getContext().getString(R.string.objecttype_comment);
+			} else if(sharedType.equals("image")) {
+				what = pumpio.getContext().getString(R.string.objecttype_image);
+			} else {
+				what = "something";
+			}
+			JSONObject originalActor = ActivityUtil.getOriginalActor(obj);
 			if(originalActor != null) {
 				message = pumpio.getContext().getString(R.string.msg_shareded_from,ActivityUtil.getActorBestName(actor), what, ActivityUtil.getActorBestName(originalActor));
 			} else {
@@ -207,25 +236,28 @@ public class ActivityUtil {
 				note.setText(Html.fromHtml(content));
 		} else if ("follow".equals(verb)) {
 			String message="";
-			
-			JSONObject originalActor = ActivityUtil.getActor(obj);
-			if(originalActor != null) {
-				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+
+			Log.i(APP_NAME,"followed" + obj.toString());
+			String followedType = obj.optString("objectType");
+			if("person".equals(followedType)) {
+				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(obj));
 			} else {
-				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), "you");
+				message = pumpio.getContext().getString(R.string.msg_followed,ActivityUtil.getActorBestName(actor), "something");
 			}
+			
 			sender.setText(message);
 			String content = ActivityUtil.getContent(obj);
 			if(content != null)
 				note.setText(Html.fromHtml(content));
 		} else if ("stop-following".equals(verb)) {
 				String message="";
-				
-				JSONObject originalActor = ActivityUtil.getActor(obj);
-				if(originalActor != null) {
-					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(originalActor));
+
+				Log.i(APP_NAME,"followed" + obj.toString());
+				String followedType = obj.optString("objectType");
+				if("person".equals(followedType)) {
+					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), ActivityUtil.getActorBestName(obj));
 				} else {
-					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), "you");
+					message = pumpio.getContext().getString(R.string.msg_stop_following,ActivityUtil.getActorBestName(actor), "something");
 				}
 				sender.setText(message);
 				String content = ActivityUtil.getContent(obj);
@@ -235,9 +267,8 @@ public class ActivityUtil {
 			String what = verb;
 
 			sender.setText(ActivityUtil.getActorBestName(actor) + " " + what);
-			String content = ActivityUtil.getContent(obj);
-			if(content != null)
-				note.setText(Html.fromHtml(content));
+			if(actContent != null)
+				note.setText(Html.fromHtml(actContent));
 		}
 
 		if(clickableLink) {

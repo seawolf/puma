@@ -61,6 +61,7 @@
 	<string name="msg_posted">%1$s posted %2$s</string>
 	<string name="msg_replied_to">%1$s replied to %2$s</string>
 	<string name="msg_favorited">%1$s favorited %2$s</string>
+	<string name="msg_liked">%1$s liked %2$s</string>
 	<string name="msg_shareded">%1$s shared %2$s</string>
 	<string name="msg_shareded_from">%1$s shared %2$s from %3$s</string>
 	<string name="msg_followed">%1$s started following %2$s</string>
