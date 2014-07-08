@@ -73,7 +73,7 @@ public class Pumpio {
 //					+consumer.getToken()+"\n"
 //					+consumer.getTokenSecret());
 			
-			mHttpUtil.setOAuthConsumer(consumer);
+			mHttpUtil.setOAuthConsumer(mAccount.getNode(), consumer);
 		} catch(SSLException e) {
 			e.printStackTrace();
 		} catch (OAuthException e) {
@@ -246,12 +246,12 @@ public class Pumpio {
 		return ret;
 	}
 	
-	public boolean postNote(JSONObject inReplyTo, String note, boolean isPublicNote, Location location) {
+	public boolean postNote(JSONObject inReplyTo, String title, String note, boolean isPublicNote, Location location) {
 		JSONObject obj = new JSONObject();
 		try {
 			if(inReplyTo == null) {
 				obj.put("objectType", "note");				
-
+				obj.put("displayName",title);
 			} else {
 				obj.put("objectType", "comment");
 				obj.put("inReplyTo", inReplyTo);
