@@ -638,7 +638,7 @@ public class ViewActivity extends Activity {
     }
 	
 	private void onReplyAction() {
-		ComposeActivity.startActivity(mContext,mAccount,mActivity.optJSONObject("object").toString(), ComposeActivity.ACTION_REPLY );
+		ComposeActivity.startActivity(mContext,mAccount,mActivity.toString(), ComposeActivity.ACTION_REPLY );
 	}
 	
 	public static void startActivity(Context context,Account account, String feed, JSONObject activity) {

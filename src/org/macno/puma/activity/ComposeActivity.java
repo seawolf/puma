@@ -1,6 +1,7 @@
 package org.macno.puma.activity;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
+import static org.macno.puma.PumaApplication.DEBUG;
 import static org.macno.puma.PumaApplication.K_PUMA_SETTINGS;
 import static org.macno.puma.activity.HomeActivity.ACTION_ACTIVITY_POSTED;
 
@@ -85,7 +86,7 @@ public class ComposeActivity extends Activity {
 	private PostHandler mHandler = new PostHandler(this);
 
 	private boolean mPreserveAccount=false;
-	private String mActivityId;
+	private String mActivity;
 	private int mAction = 0;
 
 	private File mFilename;
@@ -112,7 +113,7 @@ public class ComposeActivity extends Activity {
 				mPreserveAccount=true;
 			}
 			if(savedInstanceState.containsKey(EXTRA_ACTIVITY)) {
-				mActivityId = savedInstanceState.getString(EXTRA_ACTIVITY);
+				mActivity = savedInstanceState.getString(EXTRA_ACTIVITY);
 				mAction = savedInstanceState.getInt(EXTRA_ACTION);
 				multiAccount = false;
 			}
@@ -122,7 +123,7 @@ public class ComposeActivity extends Activity {
 				mPreserveAccount=true;
 			}
 			if(extras.containsKey(EXTRA_ACTIVITY)) {
-				mActivityId = extras.getString(EXTRA_ACTIVITY);
+				mActivity = extras.getString(EXTRA_ACTIVITY);
 				mAction = extras.getInt(EXTRA_ACTION);
 				multiAccount = false;
 			}
@@ -172,7 +173,6 @@ public class ComposeActivity extends Activity {
 		if(mAction == ACTION_REPLY) {
 			findViewById(R.id.ll_title).setVisibility(View.GONE);
 			findViewById(R.id.ll_options).setVisibility(View.GONE);
-
 		}
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if (type.equals("text/plain")) {
@@ -186,7 +186,7 @@ public class ComposeActivity extends Activity {
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putString(EXTRA_ACTIVITY, mActivityId);
+		outState.putString(EXTRA_ACTIVITY, mActivity);
 		outState.putInt(EXTRA_ACTION, mAction);
 		if(mPreserveAccount) {
 			outState.putString(EXTRA_ACCOUNT_UUID, mAccount.getUuid());
@@ -233,7 +233,8 @@ public class ComposeActivity extends Activity {
 			if (resultCode == RESULT_OK) {
 				Uri uri = intent.getData();
 				if (uri != null) {
-					Log.d(APP_NAME,"mUri: " + uri);
+					if(DEBUG)
+						Log.d(APP_NAME,"mUri: " + uri);
 					setFileFromUri(uri);
 				} 
 			} 
@@ -251,7 +252,8 @@ public class ComposeActivity extends Activity {
 						.getColumnIndexOrThrow(ImageColumns.DATA)));
 
 				if(mFilename != null && mFilename.exists() && mFilename.canRead()) {
-					Log.d(APP_NAME,"mFilename: " + mFilename.getAbsolutePath());
+					if(DEBUG)
+						Log.d(APP_NAME,"mFilename: " + mFilename.getAbsolutePath());
 					onAddedPicture();
 					isFile=true;
 				} else {
@@ -514,7 +516,7 @@ public class ComposeActivity extends Activity {
 		switch(mAction) {
 		case ACTION_REPLY:
 			try {
-				inReplyTo = new JSONObject(mActivityId);
+				inReplyTo = new JSONObject(mActivity);
 			} catch(JSONException e) {
 				Log.e(APP_NAME,e.getMessage(),e);
 			}
@@ -547,10 +549,11 @@ public class ComposeActivity extends Activity {
 						int imageWidth = options.outWidth;
 						String imageType = options.outMimeType;
 
-						Log.d(APP_NAME,"imageHeight: " + imageHeight);
-						Log.d(APP_NAME,"imageWidth: " + imageWidth);
-						Log.d(APP_NAME,"imageType: " + imageType);
-
+						if(DEBUG) {
+							Log.d(APP_NAME,"imageHeight: " + imageHeight);
+							Log.d(APP_NAME,"imageWidth: " + imageWidth);
+							Log.d(APP_NAME,"imageType: " + imageType);
+						}
 						if(imageHeight > 1024 || imageWidth > 1024) {
 							// Calculate inSampleSize
 							options.inSampleSize = ImageUtil.calculateInSampleSize(options, 1024, 1024);

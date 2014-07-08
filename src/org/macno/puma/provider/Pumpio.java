@@ -1,6 +1,7 @@
 package org.macno.puma.provider;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
+import static org.macno.puma.PumaApplication.DEBUG;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -42,9 +43,6 @@ public class Pumpio {
 	private static final String ACTIVITY_FAVORITES_URL = "/api/note/%1$s/favorites";
 	private static final String ACTIVITY_SHARES_URL = "/api/note/%1$s/shares";
 	
-	
-	private boolean mDebug = true;
-	
 	private HttpUtil mHttpUtil;
 	private Context mContext;
 	
@@ -77,10 +75,8 @@ public class Pumpio {
 		} catch(SSLException e) {
 			e.printStackTrace();
 		} catch (OAuthException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (HttpUtilException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -253,8 +249,34 @@ public class Pumpio {
 				obj.put("objectType", "note");				
 				obj.put("displayName",title);
 			} else {
+				
+				JSONObject replyObj = inReplyTo.optJSONObject("object");
+
+				if(replyObj.has("inReplyTo")) {
+					if(DEBUG) {
+						Log.v(APP_NAME, "I force reply to parent thread");
+					}
+					JSONObject orig = replyObj.optJSONObject("inReplyTo");
+					obj.put("inReplyTo", orig);
+					
+					
+				}else {
+					obj.put("inReplyTo", replyObj);
+				}
+
+				if(inReplyTo.has("actor")) {
+					JSONObject actor = inReplyTo.optJSONObject("actor");
+					
+					JSONArray ccs = new JSONArray();
+					JSONObject cc = new JSONObject();
+					cc.put("objectType", actor.optString("objectType"));
+					cc.put("id", actor.optString("id"));
+					ccs.put(cc);
+					obj.put("cc", ccs);
+				}
+
 				obj.put("objectType", "comment");
-				obj.put("inReplyTo", inReplyTo);
+				
 			}
 			if(note != null) {
 				obj.put("content",note);
@@ -306,15 +328,12 @@ public class Pumpio {
 		String url = prepareUrl(String.format(feed, mAccount.getUsername()));
 		mHttpUtil.setContentType("application/json");
 		try {
-			if(mDebug)
-				Log.d(APP_NAME, act.toString(3));
+			if(DEBUG)
+				Log.d(APP_NAME, act.toString());
 			mHttpUtil.getJsonObject(url, HttpUtil.POST, act.toString());
 			
 			return true;
 		} catch(HttpUtilException e) {
-			Log.e(APP_NAME,e.getMessage(),e);
-			return false;
-		}  catch(JSONException e) {
 			Log.e(APP_NAME,e.getMessage(),e);
 			return false;
 		}
