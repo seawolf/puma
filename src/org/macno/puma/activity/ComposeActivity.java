@@ -21,8 +21,10 @@ import org.macno.puma.util.LocationUtil;
 import org.markdown4j.Markdown4jProcessor;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -167,6 +169,10 @@ public class ComposeActivity extends Activity {
 
 		mNotificationManager.cancel(0);
 
+		if(mAction == ACTION_REPLY) {
+			findViewById(R.id.ll_title).setVisibility(View.GONE);
+			
+		}
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if (type.equals("text/plain")) {
 				handleSendText(intent); // Handle text, link etc.
@@ -264,14 +270,14 @@ public class ComposeActivity extends Activity {
 	private void onAddedPicture() {
 		mTextViewFileName.setText(mFilename.getName());
 		findViewById(R.id.ll_attachment).setVisibility(View.VISIBLE);
-		findViewById(R.id.ll_title).setVisibility(View.VISIBLE);
+//		findViewById(R.id.ll_title).setVisibility(View.VISIBLE);
 	}
 
 	private void onRemovedPicture() {
 		mFilename = null;
 		mTextViewFileName.setText("");
 		findViewById(R.id.ll_attachment).setVisibility(View.GONE);
-		findViewById(R.id.ll_title).setVisibility(View.GONE);
+//		findViewById(R.id.ll_title).setVisibility(View.GONE);
 	}
 
 	void handleSendText(Intent intent) {
@@ -562,7 +568,7 @@ public class ComposeActivity extends Activity {
 					}
 				} else {
 					try {
-						posted = pumpio.postNote(inReplyTo, note, isPublicNote, location);
+						posted = pumpio.postNote(inReplyTo, title, note, isPublicNote, location);
 					} catch (Exception e) {
 						Log.e(APP_NAME,e.getMessage(),e);
 						mHandler.sendPostFailed();
