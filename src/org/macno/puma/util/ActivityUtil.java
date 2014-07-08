@@ -1,19 +1,19 @@
 package org.macno.puma.util;
 
 import static org.macno.puma.PumaApplication.APP_NAME;
-
+import static org.macno.puma.PumaApplication.DEBUG;
 import java.text.ParseException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.macno.puma.R;
 import org.macno.puma.activity.ViewActivity;
 import org.macno.puma.provider.Pumpio;
 import org.macno.puma.view.RemoteImageView;
-
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -65,9 +65,12 @@ public class ActivityUtil {
 			return null;
 		}
 		JSONObject pumpIo = imgo.optJSONObject("pump_io");
-		if(pumpIo != null && pumpIo.has("proxyURL")) {
-			// If there's a proxy I use it
-			return pumpIo.optString("proxyURL");
+		if(pumpIo != null) {
+			if(pumpIo.has("proxyURL")) {
+				// If there's a proxy I use it
+				return pumpIo.optString("proxyURL");
+			}
+			
 		}
 		return imgo.optString("url",null);
 	}
@@ -88,8 +91,11 @@ public class ActivityUtil {
 	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act) {
 		return ActivityUtil.getViewActivity(pumpio,  act, true, false);
 	}
-	
+
 	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act, boolean showCounterBar, boolean clickableLink) {
+		return getViewActivity(pumpio, act, showCounterBar, clickableLink,false);
+	}
+	public static LinearLayout getViewActivity(Pumpio pumpio, JSONObject act, boolean showCounterBar, boolean clickableLink, boolean selectableText) {
 		
 		LayoutInflater inflater = (LayoutInflater) pumpio.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.activity_row, null);
@@ -103,12 +109,13 @@ public class ActivityUtil {
 		TextView sender = (TextView)view.findViewById(R.id.tv_sender);
 		TextView note = (TextView)view.findViewById(R.id.note);
 		
-		Log.d(APP_NAME,"Verb: " + verb + " / what: " + objectType);
+		if(DEBUG)
+			Log.d(APP_NAME,"Verb: " + verb + " / what: " + objectType);
 		if("post".equals(verb)) {
 			String message="";
 			String what = "";
 			if(title != null && !title.trim().equals("")) {
-				what = title;
+				what = "\""+title+"\"";
 			} else if(objectType.equals("note")) {
 				what = pumpio.getContext().getString(R.string.objecttype_note);
 			} else if(objectType.equals("comment")) {
@@ -271,6 +278,10 @@ public class ActivityUtil {
 				note.setText(Html.fromHtml(actContent));
 		}
 
+		
+		if(selectableText && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) ) {
+			setSelectableText(note);
+		}
 		if(clickableLink) {
 			note.setMovementMethod(LinkMovementMethod.getInstance());
 		}
@@ -298,6 +309,10 @@ public class ActivityUtil {
 		
 	}
 	
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	private static void setSelectableText(TextView tv) {
+		tv.setTextIsSelectable(true);
+	}
 	
 	public static void showCounterBar(LinearLayout view, JSONObject obj) {
 		LinearLayout ll_counter = (LinearLayout)view.findViewById(R.id.ll_counter);
@@ -322,6 +337,7 @@ public class ActivityUtil {
 			Log.d(APP_NAME,"getViewComment but item is null");
 			return null;
 		}
+		
 		LinearLayout view = (LinearLayout)inflater.inflate(R.layout.comment_row, null);
 		
 		LinearLayout ll_comment = (LinearLayout)view.findViewById(R.id.ll_comment);
@@ -338,6 +354,7 @@ public class ActivityUtil {
 		
 		JSONObject actor = item.optJSONObject("author");
 		if(actor != null ) {
+			
 			
 			String actorName = ActivityUtil.getActorBestName(actor);
 			TextView sender = (TextView)view.findViewById(R.id.tv_sender);

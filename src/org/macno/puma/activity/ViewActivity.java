@@ -116,7 +116,7 @@ public class ViewActivity extends Activity {
         	mOwnActivity = acctId.equals(mAccount.getAcctId());
         }
         LinearLayout ll_parent = (LinearLayout)findViewById(R.id.ll_activity_parent);
-        ll_parent.addView(ActivityUtil.getViewActivity(mPumpio, mActivity,false, true));
+        ll_parent.addView(ActivityUtil.getViewActivity(mPumpio, mActivity,false, true,true));
 
         addLikes();
         
