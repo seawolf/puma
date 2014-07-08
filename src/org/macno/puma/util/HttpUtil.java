@@ -98,21 +98,13 @@ public class HttpUtil {
 	private DefaultHttpClient mClient;
 
 	private CommonsHttpOAuthConsumer consumer ;
+	private String consumerHost ;
 
+	
 	private String mHost;
 
 	private String mUserAgent = "Mozilla/5.0  (Linux; U; Android " + 
 			android.os.Build.VERSION.RELEASE + ") HttpUtil/" + VERSION + " Mobile";
-
-	//	public HttpUtil() {
-	//		HttpParams params = getHttpParams();
-	//        SchemeRegistry schemeRegistry = new SchemeRegistry();
-	//        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-	//        schemeRegistry.register(new Scheme("https", 
-	//                SSLSocketFactory.getSocketFactory(), 443));
-	//        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-	//        mClient = new DefaultHttpClient(manager,params);
-	//	}
 
 	public HttpParams getHttpParams() {
 		final HttpParams params = new BasicHttpParams();
@@ -135,20 +127,6 @@ public class HttpUtil {
 
 	private String getUserAgent() {
 		return mUserAgent;
-	}
-
-	//	public HttpUtil(String host) {
-	//		HttpParams params = getHttpParams();
-	//        SchemeRegistry schemeRegistry = new SchemeRegistry();
-	//        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-	//        schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-	//        ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-	//        mClient = new DefaultHttpClient(manager,params);
-	//		mHost=host;
-	//	}
-
-	public void setHostXXX(String host) {
-		mHost=host;
 	}
 
 	public void setHost(String host,boolean untrusted) {
@@ -181,8 +159,9 @@ public class HttpUtil {
 
 	}
 
-	public void setOAuthConsumer(CommonsHttpOAuthConsumer consumer ) {
+	public void setOAuthConsumer(String host, CommonsHttpOAuthConsumer consumer) {
 		this.consumer=consumer;
+		consumerHost = host;
 	}
 
 	public CommonsHttpOAuthConsumer getOAuthConsumer() {
@@ -383,29 +362,31 @@ public class HttpUtil {
 		}
 
 		if (consumer != null) {
-			try {
-				consumer.sign(method);
-				mClient.setRedirectHandler(new RedirectHandler() {
+			if(consumerHost != null && consumerHost.equals(uri.getHost())) {
+				try {
+					consumer.sign(method);
+					mClient.setRedirectHandler(new RedirectHandler() {
 
-					// Ignore
-					@Override
-					public boolean isRedirectRequested(HttpResponse response,
-							HttpContext context) {
-						return false;
-					}
+						// Ignore
+						@Override
+						public boolean isRedirectRequested(HttpResponse response,
+								HttpContext context) {
+							return false;
+						}
 
-					@Override
-					public URI getLocationURI(HttpResponse response, HttpContext context)
-							throws ProtocolException {
-						return null;
-					}
-				});
-			} catch (OAuthMessageSignerException e) {
-				e.printStackTrace();
-			}catch (OAuthExpectationFailedException e) {
-				e.printStackTrace();
-			} catch (OAuthCommunicationException e) {
-				e.printStackTrace();
+						@Override
+						public URI getLocationURI(HttpResponse response, HttpContext context)
+								throws ProtocolException {
+							return null;
+						}
+					});
+				} catch (OAuthMessageSignerException e) {
+					e.printStackTrace();
+				}catch (OAuthExpectationFailedException e) {
+					e.printStackTrace();
+				} catch (OAuthCommunicationException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
