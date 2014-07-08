@@ -620,4 +620,22 @@ public class ComposeActivity extends Activity {
 		LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 	}
 
+	@Override
+	public void onBackPressed() {
+		if(mTitle.getText().toString().trim().equals("") &&
+			mNote.getText().toString().trim().equals("")) {
+				super.onBackPressed();
+			} else {
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle(R.string.headsup)
+						.setMessage(R.string.pending_changes)
+						.setCancelable(true)
+						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface xdialog, int id) {
+								finish();
+							}
+						}).setNegativeButton(android.R.string.no, null).create().show();
+			}
+		
+	}
 }
