@@ -5,6 +5,7 @@ import org.macno.puma.manager.AppManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -24,9 +25,12 @@ public class PumaApplication extends Application {
 	
 	private SharedPreferences mSettings;
 	
+	public static boolean DEBUG = false;
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		setDebuggable();
 		mSettings = getSharedPreferences(K_PUMA_SETTINGS,Context.MODE_PRIVATE);
 		doVersionCheck();
 	}
@@ -55,4 +59,15 @@ public class PumaApplication extends Application {
 		}
 	}
 
+	private void setDebuggable() {
+		
+	    PackageManager pm = getPackageManager();
+	    try {
+	        ApplicationInfo appinfo = pm.getApplicationInfo(getPackageName(), 0);
+	        DEBUG = (0 != (appinfo.flags & ApplicationInfo.FLAG_DEBUGGABLE));
+	    } catch(NameNotFoundException e) {
+	        /*debuggable variable will remain false*/
+	    }
+	     
+	}
 }
