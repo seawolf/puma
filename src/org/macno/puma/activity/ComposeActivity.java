@@ -171,7 +171,8 @@ public class ComposeActivity extends Activity {
 
 		if(mAction == ACTION_REPLY) {
 			findViewById(R.id.ll_title).setVisibility(View.GONE);
-			
+			findViewById(R.id.ll_options).setVisibility(View.GONE);
+
 		}
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if (type.equals("text/plain")) {
